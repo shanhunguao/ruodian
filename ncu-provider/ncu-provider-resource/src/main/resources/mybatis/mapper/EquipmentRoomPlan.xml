@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.EquipmentRoomPlanMapper">
+
+	<select id="queryList" resultType="java.util.Map">
+		select 
+			erp.PLAN_ID as planId,
+			erp.ROOM_ID as roomId,
+			erp.PLAN_DATA as planData,
+			erp.UPDATE_TIME as updateTime,
+			erp.CREATE_TIME as createTime,
+			erp.CREATE_PERSON_ID as createPersonId,
+			erp.UPDATE_PERSON_ID as updatePersonId,
+			cr.EMPLOYEE_NAME as createPersonName,
+			ud.EMPLOYEE_NAME as updatePersonName
+			er.ROOM_NAME as roomName,
+			erp.FILE_PATH as filePath
+		from 
+			tb_equipment_room_plan erp
+		LEFT JOIN view_user_employee cr on erp.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud on erp.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_equipment_room er on erp.ROOM_ID = er.ROOM_ID
+		<where>
+			<if test='roomId != null and roomId != ""'>
+				and erp.ROOM_ID = #{roomId}	
+			</if>
+			<if test='buildingId != null and buildingId != ""'>
+				and er.BUILDING_ID = #{buildingId}
+			</if>
+			<if test='campusId != null and campusId != ""'>
+				and er.CAMPUS_ID = #{campusId}
+			</if>
+			<if test='floorNum != null and floorNum != ""'>
+				and er.FLOOR = #{floorNum}
+			</if>
+		</where>
+	</select>
+</mapper>

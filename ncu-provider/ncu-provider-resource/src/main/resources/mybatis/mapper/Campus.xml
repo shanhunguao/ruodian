@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.CampusMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select
+			count(1)
+		from tb_campus
+			<where>
+				<if test="campusCode != null and campusCode != ''">
+					and CAMPUS_CODE = #{campusCode}
+				</if>
+				<if test="manageDept != null and manageDept !=''">
+					and MANAGE_DEPT = #{manageDept}
+				</if>
+				<if test="campusName != null and campusName != ''">
+					and CAMPUS_NAME like '%${campusName}%'
+				</if>
+				<if test="status != null and status != ''">
+					and STATUS = #{status}
+				</if>
+			</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select
+			c.CAMPUS_ID as campusId,
+			c.CAMPUS_NAME as campusName,
+			c.CAMPUS_CODE as campusCode,
+			d.NAME as useName,
+			c.STATUS as status,
+			c.CREATE_TIME as createTime
+		from tb_campus c
+		left join tb_dept d on c.MANAGE_DEPT = d.ID
+			<where>
+				<if test="campusCode != null and campusCode != ''">
+					and c.CAMPUS_CODE = #{campusCode}
+				</if>
+				<if test="manageDept != null and manageDept !=''">
+					and c.MANAGE_DEPT = #{manageDept}
+				</if>
+				<if test="campusName != null and campusName != ''">
+					and c.CAMPUS_NAME like '%${campusName}%'
+				</if>
+				<if test="status != null and status != ''">
+					and c.STATUS = #{status}
+				</if>
+			</where>
+			ORDER BY c.CREATE_TIME DESC
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="location" resultType="Map">
+		select
+			CAMPUS_ID as campusId,
+			CAMPUS_NAME as campusName,
+			LONGITUDE as longitude,
+			LATITUDE as latitude
+		from tb_campus
+		<where>
+			<if test="campusId != null and campusId != ''">
+				and CAMPUS_ID = #{campusId}
+			</if>
+			<if test="campusCode != null and campusCode !=''">
+				and CAMPUS_CODE = #{campusCode}
+			</if>
+			<if test="manageDept != null and manageDept !=''">
+				and MANAGE_DEPT = #{manageDept}
+			</if>
+		</where>
+	</select>
+	
+	<select id="export" resultType="Map">
+		SELECT
+			IFNULL(c.CAMPUS_NAME ,'') as CAMPUS_NAME,
+			IFNULL(c.CREATE_TIME ,'') as CREATE_TIME,
+			IFNULL(s.OPTION ,'') as STATUS,
+			IFNULL(c.REMARK ,'') as REMARK,
+			IFNULL(c. FUNCTION ,'') as FUNCTION,
+			IFNULL(c.AREA ,'') as AREA,
+			IFNULL(c.LONGITUDE ,'') as LONGITUDE,
+			IFNULL(c.LATITUDE ,'') as LATITUDE,
+			IFNULL(c.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(c.CAMPUS_CODE ,'') as CAMPUS_CODE,
+			IFNULL(p.EMPLOYEE_NAME ,'') as PRINCIPAL_NAME,
+			IFNULL(p.MOBILE ,'') as PRINCIPAL_MOBILE,
+			IFNULL(cr.EMPLOYEE_NAME ,'') as CREATE_PERSON_NAME,
+			IFNULL(ud.EMPLOYEE_NAME ,'') as UPDATE_PERSON_NAME,
+			IFNULL(u. NAME ,'') as USE_DEPT_NAME,
+			IFNULL(m. NAME ,'') as MANAGE_DEPT_NAME
+		FROM
+			tb_campus c
+		LEFT JOIN tb_employee p ON c.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON c.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON c.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = c.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id =c.MANAGE_DEPT
+		LEFT JOIN tb_code s on s.CODE_ID = c.`STATUS`
+		<where>
+			<if test="campusCode != null and campusCode != ''">
+				and CAMPUS_CODE = #{campusCode}
+			</if>
+			<if test="manageDept != null and manageDept !=''">
+				and MANAGE_DEPT = #{manageDept}
+			</if>
+			<if test="campusName != null and campusName != ''">
+				and CAMPUS_NAME like '%${campusName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and STATUS = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="Map">
+		SELECT
+			c.CAMPUS_ID as campusId,
+			c.CAMPUS_NAME as campusName,
+			c.USE_DEPT as useDept,
+			c.PRINCIPAL as principal,
+			c.CREATE_PERSON_ID as createPersonId,
+			c.CREATE_TIME as createTime,
+			c.MANAGE_DEPT as manageDept,
+			c. STATUS as status,
+			c.REMARK as remark,
+			c. FUNCTION as function,
+			c.AREA as area,
+			c.LONGITUDE as longitude,
+			c.LATITUDE as latitude,
+			c.UPDATE_TIME as updateTime,
+			c.UPDATE_PERSON_ID as updatePersonId,
+			c.CAMPUS_CODE as campusCode,
+			p.employee_name as principalName,
+			p.mobile as principalMobile,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			u. NAME as useDeptName,
+			m. NAME as manageDeptName
+		FROM
+			tb_campus c
+		LEFT JOIN tb_employee p ON c.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON c.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON c.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = c.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id =c.MANAGE_DEPT
+		<where>
+			<if test='campusCode != null and campusCode != ""'>
+				and c.CAMPUS_CODE = #{campusCode}
+			</if>
+			<if test='campusId != null and campusId != ""'>
+				and c.CAMPUS_ID = #{campusId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT
+			CAMPUS_ID,
+			CAMPUS_CODE
+		FROM
+			tb_campus
+		WHERE
+			<foreach collection="campusCodes" item="campusCode"
+				separator="or">
+				<if test='campusCode != null and campusCode != ""'>
+					CAMPUS_CODE = #{campusCode}
+				</if>
+			</foreach>
+	</select>
+	
+	<select id="selectIdByName" resultType="java.util.Map">
+		SELECT
+			campus_id,
+			campus_name
+		FROM
+			tb_campus
+		WHERE
+			<foreach collection="campusNames" item="campusName"
+				separator="or">
+				<if test='campusName != null and campusName != ""'>
+					CAMPUS_NAME = #{campusName}
+				</if>
+			</foreach>
+	</select>
+</mapper>

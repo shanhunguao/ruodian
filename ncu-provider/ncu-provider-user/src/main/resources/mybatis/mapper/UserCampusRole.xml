@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.UserCampusRoleMapper">
+	<sql id="UserCampusRoleMapperColumns">
+		a.`id` AS "id",
+		a.`user_id` AS "userId",
+		b.user_code AS "userCode",
+		a.`campus_id` AS "campusId",
+		c.campus_name AS "campusName",
+		a.`type` AS "type"
+	</sql>
+	
+	<sql id="UserCampusRoleMapperLeft">
+		LEFT JOIN tb_user b ON b.id = a.user_id
+		LEFT JOIN tb_campus c ON c.CAMPUS_ID = a.campus_id
+	</sql>
+	
+	<select id="userCampusRoleList" resultType ="UserCampusRole">
+		select
+		<include refid="UserCampusRoleMapperColumns"/>
+		FROM tb_user_campus_role a
+		<include refid="UserCampusRoleMapperLeft"/>
+		<where>
+			<if test= "entity.id != null and entity.id != ''">
+				AND a.id = #{entity.id}
+			</if>
+		</where>
+	</select>
+
+	<delete id="remove">
+		DELETE FROM tb_user_campus_role where id = #{id}
+	</delete>
+
+</mapper>

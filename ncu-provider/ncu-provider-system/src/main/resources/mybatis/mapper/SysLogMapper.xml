@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.provider.system.dao.SysLogMapper">
+
+    <select id="findAll" resultType="com.ncu.springboot.api.system.entity.SysLog">
+SELECT * from tb_log
+</select>
+    <select id="find" resultType="com.ncu.springboot.api.system.entity.SysLog">
+        SELECT * from tb_log
+        <where>
+            <if test="sysLog.username!=null and sysLog.username!=''">
+                and username=#{sysLog.username}
+            </if>
+            <if test="sysLog.operation!=null and sysLog.operation!=''">
+                and operation like CONCAT('%', #{sysLog.operation} ,'%')
+            </if>
+            <if test="sysLog.method!=null and sysLog.method!=''">
+                and method=#{sysLog.method}
+            </if>
+            <if test="sysLog.params!=null and sysLog.params!=''">
+                and params=#{sysLog.params}
+            </if>
+            <if test="sysLog.operationType!=null and sysLog.operationType!=''">
+                and operation_type=#{sysLog.operationType}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    <select id="export" resultType="java.util.Map">
+    select
+    IFNULL(c.ID,'')as ID,
+    IFNULL(c.USERNAME,'')as USERNAME,
+    IFNULL(c.OPERATION,'')as OPERATION,
+    IFNULL(c.METHOD,'')as METHOD,
+    IFNULL(c.PARAMS,'')as PARAMS,
+    IFNULL(c.OPERATION_TYPE,'')as OPERATION_TYPE,
+    IFNULL(c.IP,'')as IP,
+    IFNULL(c.CREATE_TIME,'')as CREATE_TIME
+    from tb_log c
+    </select>
+    <select id="total" resultType="java.lang.Integer">
+        select count(*) from tb_log;
+    </select>
+</mapper>

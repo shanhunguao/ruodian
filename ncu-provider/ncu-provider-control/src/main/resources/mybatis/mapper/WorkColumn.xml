@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.WorkColumnMapper">
+	
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(id)
+		from
+			zongzhi_work_column
+		<where>
+			<if test='name != null and name != ""'>
+				name like '%#{name}%'
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select 
+			id,
+			name,
+			update_time as updateTime,
+			remarks
+		from
+			zongzhi_work_column
+		<where>
+			<if test='name != null and name != ""'>
+				name like '%#{name}%'
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "0" and size >"0"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+</mapper>

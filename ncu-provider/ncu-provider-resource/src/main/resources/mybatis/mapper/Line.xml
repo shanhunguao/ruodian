@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.LineMapper">
+	
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(l.LINE_ID)
+		from tb_line l
+		<where>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					l.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="lineCode != null and lineCode != ''">
+				and l.LINE_CODE = #{lineCode}
+			</if>
+			<if test="lineName != null and lineName != ''">
+				and l.LINE_NAME like '%${lineName}%'
+			</if>
+			<if test="lineType != null and lineType != ''">
+				and l.LINE_TYPE = #{lineType}
+			</if>
+			<if test="status != null and status != ''">
+				and l.status = #{status}
+			</if>
+			<if test="fibercableId != null and fibercableId != ''">
+				and l.FIBERCABLE_ID = #{fibercableId}
+			</if>
+			<if test="portId != null and portId != ''">
+				and (l.UP_PORT = #{portId} or l.DOWN_PORT = #{portId})
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select 
+			l.LINE_ID as lineId,
+			l.LINE_NAME as lineName,
+			l.LINE_TYPE as lineType,
+			l.LINE_CODE as lineCode,
+			c.CAMPUS_NAME as campusName,
+			l.STATUS as status,
+			l.CREATE_TIME as createTime
+		from tb_line l
+		left join tb_campus c on l.CAMPUS_ID = c.CAMPUS_ID
+		<where>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					l.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="lineCode != null and lineCode != ''">
+				and l.LINE_CODE = #{lineCode}
+			</if>
+			<if test="lineName != null and lineName != ''">
+				and l.LINE_NAME like '%${lineName}%'
+			</if>
+			<if test="lineType != null and lineType != ''">
+				and l.LINE_TYPE = #{lineType}
+			</if>
+			<if test="status != null and status != ''">
+				and l.status = #{status}
+			</if>
+			<if test="fibercableId != null and fibercableId != ''">
+				and l.FIBERCABLE_ID = #{fibercableId}
+			</if>
+			<if test="portId != null and portId != ''">
+				and (l.UP_PORT = #{portId} or l.DOWN_PORT = #{portId})
+			</if>
+		</where>
+		ORDER BY l.CREATE_TIME DESC
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="location" resultType="java.util.Map">
+	<!-- 内部线路 -->
+		<if test="lineType != null and lineType != '' and lineType = 110001">
+			select
+				l.LINE_ID,
+				GROUP_CONCAT(er.LONGITUDE),
+				GROUP_CONCAT(er.LATITUDE)
+			from tb_line l
+			left join view_resource_relation v on l.UP_PORT = v.PORT_ID or l.DOWN_PORT = v.PORT_ID
+			left join tb_equipment_room er on er.ROOM_ID = v.ROOM_ID
+			<where>
+				<if test="lineId != null and lineId != ''">
+					and l.LINE_ID = #{lineId}
+				</if>
+			</where>
+			GROUP BY l.LINE_ID
+		</if>
+		
+	<!-- 外部线路 -->
+		<if test="lineType != null and lineType != '' and lineType = 110002">
+			select 
+				l.LINE_ID as lineId
+				CONCAT(pw1.LATITUDE,pw2.LATITUDE) as latitude,
+				CONCAT(pw1.LONGITUDE,pw2.LONGITUDE) as longitude
+			from tb_line l
+			left join tb_fibercable f on f.FIBERCABLE_ID = l.FIBERCABLE_ID
+			left join tb_fibercable_pipeline fp on f.FIBERCABLE_ID = fp.FIBERCABLE_ID
+			left join tb_pipeline p on fp.PIPELINE_ID = p.PIPELINE_ID
+			left join tb_pipe_wellhead pw1 on p.WELLHEAD_ID1 = pw1.WELLHEAD_ID
+			left join tb_pipe_wellhead pw2 on p.WELLHEAD_ID2 = pw2.WELLHEAD_ID
+			<where>
+				<if test="lineId != null and lineId != ''">
+					and l.LINE_ID = #{lineId}
+				</if>
+			</where>
+		</if>
+	</select>
+	
+	<select id="export" resultType="Map">
+		SELECT 
+			IFNULL(l.LINE_CODE ,'') as LINE_CODE,
+			IFNULL(l.LINE_NAME ,'') as LINE_NAME,
+			IFNULL(l.CREATE_TIME ,'') as CREATE_TIME,
+			IFNULL(s.`OPTION` ,'') as STATUS,
+			IFNULL(up.PORT_CODE ,'') as UP_PORT_CODE,
+			IFNULL(dp.PORT_CODE ,'') as DOWN_PORT_CODE,
+			IFNULL(s.`OPTION` ,'') as LINE_TYPE,
+			IFNULL(l.REMARK ,'') as REAMRK,
+			IFNULL(l.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(c.CAMPUS_CODE ,'') as CAMPUS_CODE,
+			IFNULL(l.USE_TIME ,'') as USE_TIME,
+			IFNULL(p.employee_name ,'') as PRINCIPAL_NAME,
+			IFNULL(p.mobile ,'') as PRINCIPAL_MOBILE,
+			IFNULL(cr.employee_name ,'') as CREATE_PERSON_NAME,
+			IFNULL(ud.employee_name ,'') as UPDATE_PERSON_NAME,
+			IFNULL(u. NAME ,'') as USE_DEPT_NAME,
+			IFNULL(m. NAME ,'') as MANAGE_DEPT_NAME,
+			IFNULL(f.FIBERCABLE_CODE ,'') as FIBERCABLE_CODE
+		FROM 
+			tb_line l
+		LEFT JOIN tb_employee p ON l.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON l.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON l.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = l.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id =l.MANAGE_DEPT
+		LEFT JOIN tb_fibercable f on f.FIBERCABLE_ID = l.FIBERCABLE_ID
+		LEFT JOIN tb_code s on s.CODE_ID = l.`STATUS`
+		LEFT JOIN tb_code t on t.CODE_ID = l.LINE_TYPE
+		LEFT JOIN tb_port up on up.PORT_ID = l.UP_PORT
+		LEFT JOIN tb_port dp on dp.PORT_ID = l.DOWN_PORT
+		LEFT JOIN tb_campus c on c.CAMPUS_ID = l.CAMPUS_ID
+		<where>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					c.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="lineCode != null and lineCode != ''">
+				and l.LINE_CODE = #{lineCode}
+			</if>
+			<if test="lineName != null and lineName != ''">
+				and l.LINE_NAME like '%${lineName}%'
+			</if>
+			<if test="lineType != null and lineType != ''">
+				and l.LINE_TYPE = #{lineType}
+			</if>
+			<if test="status != null and status != ''">
+				and l.status = #{status}
+			</if>
+			<if test="fibercableId != null and fibercableId != ''">
+				and l.FIBERCABLE_ID = #{fibercableId}
+			</if>
+			<if test="portId != null and portId != ''">
+				and (l.UP_PORT = #{portId} or l.DOWN_PORT = #{portId})
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="Map">
+		SELECT 
+			l.LINE_ID as lineId,
+			l.LINE_NAME as lineName,
+			l.PRINCIPAL as principal,
+			l.USE_DEPT as useDept,
+			l.CREATE_PERSON_ID as createPersonId,
+			l.CREATE_TIME as createTime,
+			l.MANAGE_DEPT as manageDept,
+			l.STATUS as status,
+			l.UP_PORT as upPort,
+			l.DOWN_PORT as downPort,
+			l.LINE_TYPE as lineType,
+			l.REMARK as reamrk,
+			l.UPDATE_TIME as updateTime,
+			l.CAMPUS_ID as campusId,
+			l.FIBERCABLE_ID as fibercableId,
+			l.LINE_CODE as lineCode,
+			l.USE_TIME as useTime,
+			l.UPDATE_PERSON_ID as updatePersonId,
+			p.employee_name as principalName,
+			p.mobile as principalMobile,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			u. NAME as useDeptName,
+			m. NAME as manageDeptName,
+			f.FIBERCABLE_CODE as fibercableCode
+		from tb_line l
+		LEFT JOIN tb_employee p ON l.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON l.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON l.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = l.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id =l.MANAGE_DEPT
+		LEFT JOIN tb_fibercable f on f.FIBERCABLE_ID = l.FIBERCABLE_ID
+		<where>
+			<if test="lineCode != null and lineCode != ''">
+				and l.LINE_CODE = #{lineCode}
+			</if>
+			<if test="lineId != null and lineId != ''">
+				and l.LINE_ID = #{lineId}
+			</if>
+		</where>
+	</select>
+	
+</mapper>

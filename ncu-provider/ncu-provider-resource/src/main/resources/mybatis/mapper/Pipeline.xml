@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.PipelineMapper">
+	
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(p.PIPELINE_ID) 
+		from tb_pipeline p
+		left join tb_pipe_wellhead w on (p.WELLHEAD_ID1 = w.WELLHEAD_ID or p.WELLHEAD_ID2 = w.WELLHEAD_ID)
+		<where>
+			<if test="pipelineCode != null and pipelineCode != ''">
+				and p.PIPELINE_CODE = #{pipelineCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					w.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="wellheadId != null and wellheadId != ''">
+				and w.PIPELINE_ID = #{wellheadId}
+			</if>
+			<if test="pipelineName != null and pipelineName != ''">
+				and p.PIPELINE_NAME like '%${pipelineName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and p.status = #{status}
+			</if>
+			<if test="pipelineType != null and pipelineType != ''">
+				and p.PIPELINE_TYPE = #{pipelineType}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="java.util.Map">
+		select 
+			DISTINCT
+			p.PIPELINE_ID as pipelineId,
+			p.PIPELINE_NAME as pipelineName,
+			p.PIPELINE_TYPE as pipelineType,
+			p.PIPELINE_CODE as pipelineCode,
+			p.STATUS as status,
+			c.CAMPUS_NAME as campusName,
+			p.CREATE_TIME as createTime
+		from tb_pipeline p
+		left join tb_pipe_wellhead w on (p.WELLHEAD_ID1 = w.WELLHEAD_ID or p.WELLHEAD_ID2 = w.WELLHEAD_ID)
+		left join tb_campus c on c.CAMPUS_ID = w.CAMPUS_ID
+		<where>
+			<if test="pipelineCode != null and pipelineCode != ''">
+				and p.PIPELINE_CODE = #{pipelineCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					w.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="wellheadId != null and wellheadId != ''">
+				and w.WELLHEAD_ID = #{wellheadId}
+			</if>
+			<if test="pipelineName != null and pipelineName != ''">
+				and p.PIPELINE_NAME like '%${pipelineName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and p.STATUS = #{status}
+			</if>
+			<if test="pipelineType != null and pipelineType != ''">
+				and p.PIPELINE_TYPE = #{pipelineType}
+			</if>
+		</where>
+		ORDER BY p.CREATE_TIME DESC
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="location" resultType="java.util.Map">
+		SELECT
+			a.PIPELINE_ID as pipelineId,
+			a.PIPELINE_NAME as pipelineName,
+			GROUP_CONCAT(a.WELLHEAD_ID) as wellheadIds,
+			GROUP_CONCAT(a.WELLHEAD_NAME) as wellheadNames,
+			CONCAT('[',GROUP_CONCAT(a.location),']') as locations
+		from 
+			(SELECT 
+				p.PIPELINE_ID,
+				p.PIPELINE_NAME,
+				w.WELLHEAD_ID,
+				w.WELLHEAD_NAME,
+				CONCAT('[',w.LATITUDE,',',w.LONGITUDE,']') as location
+			from tb_pipeline p
+			LEFT JOIN tb_pipe_wellhead w on (p.WELLHEAD_ID1 = w.WELLHEAD_ID or p.WELLHEAD_ID2 = w.WELLHEAD_ID)
+		<where>
+			<if test="pipelineId != null and pipelineId != ''">
+            	and p.PIPELINE_ID = #{pipelineId}
+            </if>
+            <if test="wellheadId != null and wellheadId != ''">
+            	and w.WELLHEAD_ID = #{wellheadId}
+            </if>
+           <foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					w.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test='pipelineCode != null and pipelineCode != ""'>
+				and p.PIPELINE_CODE = #{pipelineCode}
+			</if>
+		</where>
+		) a GROUP BY a.PIPELINE_ID
+	</select>
+	
+	<select id="export" resultType="java.util.Map">
+		SELECT
+			IFNULL(pl.PIPELINE_CODE ,'') as PIPELINE_CODE,
+			IFNULL(pl.FUNCTION ,'') as FUNCTION,
+			IFNULL(pl.POWER ,'') as POWER,
+			IFNULL(pl.DIAMETER ,'') as DIAMETER,
+			IFNULL(s.`OPTION` ,'') as STATUS,
+			IFNULL(pl.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(pl.PIPELINE_NAME ,'') as PIPELINE_NAME,
+			IFNULL(pl.CREATE_TIME ,'') as CREATE_TIME,
+			IFNULL(pl.REMARK ,'') as REMARK,
+			IFNULL(t.`OPTION` ,'') as PIPELINE_TYPE,
+			IFNULL(pl.DEPTH ,'') as DEPTH,
+			IFNULL(pl.LENGTH ,'') as LENGTH,
+			IFNULL(p.employee_name ,'') as PRINCIPAL_NAME,
+			IFNULL(p.mobile ,'') as PRINCIPAL_MOBILE,
+			IFNULL(cr.employee_name ,'') as CREATE_PERSON_NAME,
+			IFNULL(ud.employee_name ,'') as UPDATE_PERSON_NAME,
+			IFNULL(u. NAME ,'') as USE_DEPT_NAME,
+			IFNULL(m. NAME ,'') as MANAGE_DEPT_NAME,
+			IFNULL(pw1.WELLHEAD_CODE ,'') as WELLHEAD_CODE1,
+			IFNULL(pw2.WELLHEAD_CODE ,'') as WELLHEAD_CODE2
+		FROM 
+			tb_pipeline pl
+		LEFT JOIN tb_employee p ON pl.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON pl.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON pl.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = pl.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id = pl.MANAGE_DEPT
+		LEFT JOIN tb_pipe_wellhead pw1 on pw1.WELLHEAD_CODE = pl.WELLHEAD_ID1
+		LEFT JOIN tb_pipe_wellhead pw2 on pw2.WELLHEAD_CODE = pl.WELLHEAD_ID2
+		LEFT JOIN tb_code s on s.CODE_ID = pl.`STATUS`
+		LEFT JOIN tb_code t on t.CODE_ID = pl.PIPELINE_TYPE
+		<where>
+			<if test="pipelineCode != null and pipelineCode != ''">
+				and p.PIPELINE_CODE = #{pipelineCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					pw1.CAMPUS_ID = #{campusId} and pw2.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="wellheadId != null and wellheadId != ''">
+				and w.PIPELINE_ID = #{wellheadId}
+			</if>
+			<if test="pipelineName != null and pipelineName != ''">
+				and p.PIPELINE_NAME like '%${pipelineName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and p.status = #{status}
+			</if>
+			<if test="pipelineType != null and pipelineType != ''">
+				and p.PIPELINE_TYPE = #{pipelineType}
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="java.util.Map">
+		SELECT
+			pl.PIPELINE_ID as pipelineId,
+			pl.FUNCTION as function,
+			pl.POWER as power,
+			pl.DIAMETER as diameter,
+			pl.PRINCIPAL as principal,
+			pl.CREATE_PERSON_ID as createPersonId,
+			pl.STATUS as status,
+			pl.WELLHEAD_ID1 as wellheadId1,
+			pl.WELLHEAD_ID2 as wellheadId2,
+			pl.UPDATE_TIME as updateTime,
+			pl.MANAGE_DEPT as manageDept,
+			pl.PIPELINE_NAME as pipelineName,
+			pl.CREATE_TIME as createTime,
+			pl.REMARK as remark,
+			pl.USE_DEPT as useDept,
+			pl.PIPELINE_TYPE as pipelineType,
+			pl.DEPTH as depth,
+			pl.UPDATE_PERSON_ID as updatePersonId,
+			pl.PIPELINE_CODE as pipelineCode,
+			pl.LENGTH as length,
+			p.employee_name as principalName,
+			p.mobile as principalMobile,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			u. NAME as useDeptName,
+			m. NAME as manageDeptName,
+			pw1.WELLHEAD_CODE as wellheadCode1,
+			pw2.WELLHEAD_CODE as wellheadCode2
+		from tb_pipeline pl
+		LEFT JOIN tb_employee p ON pl.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON pl.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON pl.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = pl.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id = pl.MANAGE_DEPT
+		LEFT JOIN tb_pipe_wellhead pw1 on pw1.WELLHEAD_CODE = pl.WELLHEAD_ID1
+		LEFT JOIN tb_pipe_wellhead pw2 on pw2.WELLHEAD_CODE = pl.WELLHEAD_ID2
+		<where>
+			<if test='pipelineCode != null and pipelineCode != ""'>
+				and pl.PIPELINE_CODE = #{pipelineCode}
+			</if>
+			<if test='pipelineId != null and pipelineId != ""'>
+				and pl.PIPELINE_ID = #{pipelineId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT
+			PIPELINE_ID,
+			PIPELINE_CODE
+		FROM
+			<foreach collection="pipelineCodes" item="pipelineCode"
+				separator="or">
+				<if test='pipelineCode != null and pipelineCode != ""'>
+					PIPELINE_CODE = #{pipelineCode}
+				</if>
+			</foreach>
+	</select>
+</mapper>

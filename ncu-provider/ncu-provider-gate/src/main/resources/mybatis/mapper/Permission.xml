@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.PermissionMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select
+			count(id) as count
+		from
+			gate_permission
+		<where>
+			<if test='userId != null and userId != ""'>
+				and user_id = #{userId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select
+			id,
+			user_id as userId,
+			create_time as createTime,
+			object_id as objectId,
+			object_type as objectType,
+			create_persion as createPersion
+		from
+			gate_permission
+		<where>
+			<if test='userId != null and userId != ""'>
+				and user_id = #{userId}
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+</mapper>

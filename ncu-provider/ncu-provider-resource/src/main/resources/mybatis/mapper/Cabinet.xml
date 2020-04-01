@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.CabinetMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(c.CABINET_ID) 
+		from tb_cabinet c
+		left join tb_equipment_room e on c.ROOM_ID = e.ROOM_ID
+		<where>
+			<if test="cabinetCode != null and cabinetCode != ''">
+				and c.CABINET_CODE = #{cabinetCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					e.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="roomName != null and roomName != ''">
+				and e.ROOM_NAME like '%${roomName}%'
+			</if>
+			<if test="cabinetName != null and cabinetName != ''">
+				and c.cabinet_name like '%${cabinetName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and c.status = #{status}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryList" resultType="java.util.Map">
+		select
+			c.CABINET_ID as cabinetId,
+			c.CABINET_NAME as cabinetName,
+			c.CABINET_MODEL as cabinetModel,
+			c.CABINET_CODE as cabinetCode,
+			c.STATUS as status,
+			cp.CAMPUS_NAME as campusName,
+			c.CREATE_TIME as createTime
+		from tb_cabinet c
+		left join tb_equipment_room e on c.ROOM_ID = e.ROOM_ID
+		left join tb_campus cp on e.CAMPUS_ID = cp.CAMPUS_ID
+		<where>
+			<if test="cabinetCode != null and cabinetCode != ''">
+				and c.CABINET_CODE = #{cabinetCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					e.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="roomName != null and roomName != ''">
+				and e.ROOM_NAME like '%${roomName}%'
+			</if>
+			<if test="cabinetName != null and cabinetName != ''">
+				and c.cabinet_name like '%${cabinetName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and c.status = #{status}
+			</if>
+		</where>
+		ORDER BY c.CREATE_TIME DESC
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+
+	<select id="export" resultType="java.util.Map">
+		SELECT
+			IFNULL(c.CABINET_CODE ,'') as CABINET_CODE,
+			IFNULL(c.HEIGHT ,'') as HEIGHT,
+			IFNULL(s.`OPTION` ,'') as STATUS,
+			IFNULL(t.`OPTION` ,'') as CABINET_TYPE,
+			IFNULL(c.REMARK ,'') as REMARK,
+			IFNULL(c.CABINET_MODEL ,'') as CABINET_MODEL,
+			IFNULL(c.CABINET_NAME ,'') as CABINET_NAME,
+			IFNULL(c.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(c.CREATE_TIME ,'') as CREATE_TIME,
+			IFNULL(c.LENGTH ,'') as LENGTH,
+			IFNULL(c.WIDTH ,'') as WIDTH,
+			IFNULL(c. FUNCTION ,'') as FUNCTION,
+			IFNULL(c.AREA ,'') as AREA,
+			IFNULL(c.LOCATION ,'') as LOCATION,
+			IFNULL(c.RECEIVE ,'') as RECEIVE,
+			IFNULL(c.SERIES ,'') as SERIES,
+			IFNULL(c.PROPERTY_SERIES ,'') as PROPERTY_SERIES,
+			IFNULL(c.TIER ,'') as TIER,
+			IFNULL(p.EMPLOYEE_NAME ,'') as PRINCIPAL_NAME,
+			IFNULL(p.MOBILE ,'') as PRINCIPAL_MOBILE,
+			IFNULL(cr.EMPLOYEE_NAME ,'') as CREATE_PERSON_NAME,
+			IFNULL(ud.EMPLOYEE_NAME ,'') as UPDATE_PERSON_NAME,
+			IFNULL(sp.SUPPLIER_NAME ,'') as MANUFACTOR_NAME,
+			IFNULL(u.NAME ,'') as USE_DEPT_NAME,
+			IFNULL(m.NAME ,'') as MANAGE_DEPT_NAME,
+			IFNULL(mp.EMPLOYEE_NAME ,'') as MAINTAIN_PERSON_NAME,
+			IFNULL(mp.MOBILE ,'') as MAINTAIN_PERSON_MOBILE,
+			IFNULL(er.ROOM_CODE ,'') as ROOM_CODE
+		FROM
+			tb_cabinet c
+		LEFT JOIN tb_employee p ON c.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON c.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON c.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_supplier sp on sp.id = c.MANUFACTOR
+		LEFT JOIN tb_dept u on u.id = c.USE_DEPT
+		LEFT JOIN tb_dept m on m.id = c.MANAGE_DEPT
+		LEFT JOIN tb_employee mp on mp.id = c.MAINTAIN_PERSON
+		LEFT JOIN tb_equipment_room er on er.ROOM_ID = c.ROOM_ID
+		LEFT JOIN tb_code s on s.CODE_ID = c.STATUS
+		LEFT JOIN tb_code t on t.CODE_ID = c.CABINET_TYPE
+		<where>
+			<if test="cabinetCode != null and cabinetCode != ''">
+				and c.CABINET_CODE = #{cabinetCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					er.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="roomName != null and roomName != ''">
+				and e.ROOM_NAME like '%${roomName}%'
+			</if>
+			<if test="cabinetName != null and cabinetName != ''">
+				and c.cabinet_name like '%${cabinetName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and c.status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="java.util.Map">
+		SELECT
+			c.CABINET_ID as cabinetId,
+			c.ROOM_ID as roomId,
+			c.HEIGHT as height,
+			c.PRINCIPAL as principal,
+			c.CREATE_PERSON_ID as createPersonId,
+			c.MAINTAIN_PERSON as maintainPerson,
+			c.MANAGE_DEPT as manageDept,
+			c. STATUS as status,
+			c.REMARK as remark,
+			c.USE_DEPT as useDept,
+			c.MANUFACTOR as manufactor,
+			c.CABINET_MODEL as cabinetModel,
+			c.CABINET_NAME as cabinetName,
+			c.UPDATE_TIME as updateTime,
+			c.CREATE_TIME as createTime,
+			c.LENGTH as length,
+			c.WIDTH as width,
+			c. FUNCTION as function,
+			c.AREA as area,
+			c.LOCATION as location,
+			c.RECEIVE as receive,
+			c.SERIES as series,
+			c.PROPERTY_SERIES as propertySeries,
+			c.TIER as tier,
+			c.UPDATE_PERSON_ID as updatePersonId,
+			c.CABINET_CODE as cabinetCode,
+			p.employee_name as principalName,
+			p.mobile as principalMobile,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			s.supplier_name as manufactorName,
+			u.name as useDeptName,
+			m.name as manageDeptName,
+			mp.employee_name as maintainPersonName,
+			mp.mobile as maintainPersonMobile,
+			er.ROOM_CODE as roomCode
+		FROM
+			tb_cabinet c
+		LEFT JOIN tb_employee p ON c.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON c.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON c.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_supplier s on s.id = c.MANUFACTOR
+		LEFT JOIN tb_dept u on u.id = c.USE_DEPT
+		LEFT JOIN tb_dept m on m.id = c.MANAGE_DEPT
+		LEFT JOIN tb_employee mp on mp.id = c.MAINTAIN_PERSON
+		LEFT JOIN tb_equipment_room er on er.ROOM_ID = c.ROOM_ID
+		<where>
+			<if test='cabinetId != null and cabinetId != ""'>
+				c.CABINET_ID = #{cabinetId}
+			</if>
+			<if test='cabinetCode != null and cabinetCode != ""'>
+				c.CABINET_CODE = #{cabinetCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT 
+			CABINET_ID,
+			CABINET_CODE
+		FROM 
+			tb_cabinet
+		WHERE
+			<foreach collection="cabinetCodes" item="cabinetCode"
+				separator="or">
+				<if test='cabinetCode != null and cabinetCode != ""'>
+					CABINET_CODE = #{cabinetCode}
+				</if>
+			</foreach>
+	</select>
+</mapper>

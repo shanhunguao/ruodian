@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.PipeWellheadMapper">
+	
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(p.WELLHEAD_ID) 
+		from tb_pipe_wellhead p
+		<where>
+			<if test="wellheadCode != null and wellheadCode != ''">
+				and p.WELLHEAD_CODE = #{wellheadCode}			
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					p.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="wellheadType != null and wellheadType != ''">
+				and p.WELLHEAD_TYPE = #{wellheadType}
+			</if>
+			<if test="wellheadName != null and wellheadName != ''">
+				and p.wellhead_name like '%${wellheadName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and p.status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="java.util.Map">
+		select 
+			p.WELLHEAD_ID as wellheadId,
+			p.WELLHEAD_NAME as wellheadName,
+			p.WELLHEAD_TYPE as wellheadType,
+			p.WELLHEAD_CODE as wellheadCode,
+			p.STATUS as status,
+			c.CAMPUS_NAME as campusName,
+			p.CREATE_TIME as createTime
+		from tb_pipe_wellhead p
+		left join tb_campus c on p.CAMPUS_ID = c.CAMPUS_ID
+		<where>
+			<if test="wellheadCode != null and wellheadCode != ''">
+				and p.WELLHEAD_CODE = #{wellheadCode}			
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					p.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="wellheadType != null and wellheadType != ''">
+				and p.WELLHEAD_TYPE = #{wellheadType}
+			</if>
+			<if test="wellheadName != null and wellheadName != ''">
+				and p.wellhead_name like '%${wellheadName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and p.status = #{status}
+			</if>
+		</where>
+		ORDER BY p.CREATE_TIME DESC
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="location" resultType="java.util.Map">
+		select 
+			WELLHEAD_ID as wellheadId,
+			WELLHEAD_NAME as wellheadName,
+			LONGITUDE as longitude,
+			LATITUDE as latitude
+		from tb_pipe_wellhead
+		<where>
+			<if test="wellheadId != null and wellheadId != ''">
+            	and WELLHEAD_ID = #{wellheadId}
+            </if>
+            <if test='wellheadCode != null and wellheadCode != ""'>
+            	and WELLHEAD_CODE = #{wellheadCode}
+            </if>
+             <foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+		</where>
+	</select>
+	
+	<select id="export" resultType="java.util.Map">
+		SELECT
+			IFNULL(pw.WELLHEAD_CODE ,'') as WELLHEAD_CODE,
+			IFNULL(pw.FUNCTION ,'') as FUNCTION,
+			IFNULL(pw.POWER ,'') as POWER,
+			IFNULL(pw.DIAMETER ,'') as DIAMETER,
+			IFNULL(pw.CREATE_TIME ,'') as CREATE_TIME,
+			IFNULL(pw.LONGITUDE ,'') as LONGITUDE,
+			IFNULL(pw.LATITUDE ,'') as LATITUDE,
+			IFNULL(pw.WELLHEAD_NAME ,'') as WELLHEAD_NAME,
+			IFNULL(pw.REMARK ,'') as REMARK,
+			IFNULL(s.`OPTION` ,'') as STATUS,
+			IFNULL(pw.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(t.`OPTION` ,'') as WELLHEAD_TYPE,
+			IFNULL(pw.DEPTH ,'') as DEPTH,
+			IFNULL(er.ROOM_CODE ,'') as ROOM_CODE,
+			IFNULL(p.employee_name ,'') as PRINCIPAL_NAME,
+			IFNULL(p.mobile ,'') as PRINCIPAL_MOBILE,
+			IFNULL(cr.employee_name ,'') as CREATE_PERSON_NAME,
+			IFNULL(ud.employee_name ,'') as UPDATE_PERSON_NAME,
+			IFNULL(u. NAME ,'') as USE_DEPT_NAME,
+			IFNULL(m. NAME ,'') as MANAGE_DEPT_NAME,
+			IFNULL(c.CAMPUS_NAME ,'') as CAMPUS_NAME
+		FROM 
+			tb_pipe_wellhead pw
+		LEFT JOIN tb_employee p ON pw.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON pw.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON pw.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = pw.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id = pw.MANAGE_DEPT
+		LEFT JOIN tb_campus c on c.CAMPUS_ID = pw.CAMPUS_ID
+		LEFT JOIN tb_code s on s.CODE_ID = pw.`STATUS`
+		LEFT JOIN tb_code t on t.CODE_ID = pw.WELLHEAD_TYPE
+		LEFT JOIN tb_equipment_room er on er.ROOM_ID = pw.ROOM_ID
+		<where>
+			<if test="wellheadCode != null and wellheadCode != ''">
+				and p.WELLHEAD_CODE = #{wellheadCode}			
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					c.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="wellheadType != null and wellheadType != ''">
+				and p.WELLHEAD_TYPE = #{wellheadType}
+			</if>
+			<if test="wellheadName != null and wellheadName != ''">
+				and p.wellhead_name like '%${wellheadName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and p.status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="java.util.Map">
+		SELECT
+			pw.WELLHEAD_ID as wellheadId,
+			pw.FUNCTION as function,
+			pw.POWER as power,
+			pw.DIAMETER as diameter,
+			pw.PRINCIPAL as principal,
+			pw.CREATE_TIME as createTime,
+			pw.CREATE_PERSON_ID as createPersonId,
+			pw.LONGITUDE as longitude,
+			pw.LATITUDE as latitude,
+			pw.WELLHEAD_NAME as wellheadName,
+			pw.MANAGE_DEPT as manageDept,
+			pw.REMARK as remark,
+			pw.STATUS as status,
+			pw.UPDATE_TIME as updateTime,
+			pw.WELLHEAD_TYPE as wellheadType,
+			pw.CAMPUS_ID as campusId,
+			pw.DEPTH as depth,
+			pw.USE_DEPT as useDept,
+			pw.ROOM_ID as roomId,
+			pw.UPDATE_PERSON_ID as updatePersonId,
+			pw.WELLHEAD_CODE as wellheadCode,
+			p.employee_name as principalName,
+			p.mobile as principalMobile,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			u. NAME as useDeptName,
+			m. NAME as manageDeptName,
+			c.CAMPUS_NAME as campusName
+		from tb_pipe_wellhead pw
+		LEFT JOIN tb_employee p ON pw.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON pw.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON pw.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = pw.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id = pw.MANAGE_DEPT
+		LEFT JOIN tb_campus c on c.CAMPUS_ID = pw.CAMPUS_ID
+		<where>
+			<if test="wellheadCode != null and wellheadCode != ''">
+				and pw.WELLHEAD_CODE = #{wellheadCode}			
+			</if>
+			<if test='wellheadId != null and wellheadId != ""'>
+				and pw.WELLHEAD_ID = #{wellheadId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT
+			WELLHEAD_ID,
+			WELLHEAD_CODE
+		FROM
+			tb_pipe_wellhead
+		WHERE
+			<foreach collection="wellheadCodes" item="wellheadCode"
+				separator="or">
+				<if test='wellheadCode != null and wellheadCode != ""'>
+					WELLHEAD_CODE = #{wellheadCode}
+				</if>
+			</foreach>
+	</select>
+</mapper>

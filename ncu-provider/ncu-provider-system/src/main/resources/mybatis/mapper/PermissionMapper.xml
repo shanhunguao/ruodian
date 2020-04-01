@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.provider.system.dao.PermissionMapper">
+
+    <select id="selectUserMenu" resultType="com.ncu.springboot.biz.entity.Permission">
+        SELECT m.* FROM tb_permission m WHERE m.permission_type_id &lt;&gt; 2 AND m.permission_id IN
+        (SELECT DISTINCT rm.permission_id FROM tb_role_permission rm
+        WHERE rm.`role_id`=#{roleId}) ORDER BY m.update_time
+</select>
+    <select id="selectPermission" resultType="com.ncu.springboot.biz.entity.Permission">
+    SELECT * FROM tb_permission WHERE permission_type_id &lt;&gt;2
+</select>
+<select id="findById" resultType="com.ncu.springboot.biz.entity.Permission">
+  SELECT * FROM tb_permission WHERE permission_id=#{menuId}
+</select>
+    <select id="findOne" resultType="java.lang.String">
+    SELECT permission_id FROM tb_permission WHERE parent_id=0
+    </select>
+
+    <select id="findTwo" resultType="java.lang.String">
+        SELECT permission_id FROM tb_permission WHERE parent_id in
+        <foreach collection="list" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+<select id="findPark" resultType="java.lang.String">
+SELECT m.permission_name FROM tb_permission m WHERE parent_id=#{parentId} AND m.permission_id IN
+    (SELECT DISTINCT rm.permission_id FROM tb_role_permission rm
+    LEFT JOIN tb_role r ON(rm.role_id = r.role_id)
+    LEFT JOIN tb_user_role ur ON(ur.role_id = r.role_id)
+    LEFT JOIN tb_user u ON (u.id = ur.id)
+    WHERE u.user_code=#{userCode}) ORDER BY m.update_time
+</select>
+    <select id="findPermissionId" resultType="java.lang.String">
+        SELECT permission_id FROM tb_permission WHERE url=#{url}
+    </select>
+    <select id="findParentId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM tb_permission WHERE parent_id=#{parentId}
+    </select>
+
+</mapper>

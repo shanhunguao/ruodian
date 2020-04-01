@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.springboot</groupId>
+		<artifactId>springbootparent</artifactId>
+		<version>1.0-RELEASE</version>
+	</parent>
+
+	<artifactId>common-zookeeper</artifactId>
+	<name>common-zookeeper</name>
+	<packaging>jar</packaging>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.springboot</groupId>
+			<artifactId>common-core</artifactId>
+			<version>1.0-RELEASE</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.101tec/zkclient -->
+		<dependency>
+			<groupId>com.101tec</groupId>
+			<artifactId>zkclient</artifactId>
+			<version>0.11</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.karaf.features/org.apache.karaf.features.core -->
+		<!-- <dependency>
+			<groupId>org.apache.karaf.features</groupId>
+			<artifactId>org.apache.karaf.features.core</artifactId>
+			<version>4.2.6</version>
+		</dependency> -->
+
+		<!-- https://mvnrepository.com/artifact/io.fabric8/fabric-zookeeper -->
+		<dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>fabric-zookeeper</artifactId>
+			<version>1.2.0.redhat-630187</version>
+		</dependency>
+
+	</dependencies>
+	
+	<repositories>
+		<repository>
+			<id>Redhat GA</id>
+			<name>Redhat GA</name>
+			<url>https://maven.repository.redhat.com/ga/</url>
+		</repository>
+	</repositories>
+</project>

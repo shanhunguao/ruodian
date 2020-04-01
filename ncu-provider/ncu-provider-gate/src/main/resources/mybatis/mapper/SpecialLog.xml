@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.SpecialLogMapper">
+
+<select id="querySpecialLog" resultType="Map">
+		select
+			sl.id,
+			sl.gate_id as gateId,
+			sl.guard_id as guardId,
+			sl.create_time as createTime,
+			sl.remark,
+			sl.img_path1 as imgPath1,
+			sl.img_path2 as imgPath2,
+			sl.img_path3 as imgPath3,
+			t.user_name as guardName,
+			g.gate_name as gateName,
+			c.campus_name as campusName
+		from
+			gate_special_log sl
+		left join
+			tb_teacher t on sl.guard_id = t.user_id
+		left join
+			gate_gate g on g.gate_id = sl.gate_id
+		left join
+			tb_campus c on c.campus_id = g.campus_id
+		<where>
+			<if test='userId != null and userId != ""'>
+				and sl.guard_id = #{userId}
+			</if>
+			<if test='date != null and date != ""'>
+				and date(sl.create_time) = date(#{date})
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+</mapper>

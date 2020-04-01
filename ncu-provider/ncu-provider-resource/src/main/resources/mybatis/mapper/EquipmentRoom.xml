@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.EquipmentRoomMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(e.ROOM_ID) 
+		from tb_equipment_room e 
+		left join tb_campus c on e.CAMPUS_ID = c.CAMPUS_ID
+		<where>
+			<if test="roomCode != null and roomCode != ''">
+				and e.ROOM_CODE = #{roomCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					c.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="roomType != null and roomType != ''">
+				and e.ROOM_TYPE = #{roomType}
+			</if>
+			<if test="roomName != null and roomName != ''">
+				and e.ROOM_NAME like '%${roomName}%'
+			</if>		
+			<if test="status != null and status != ''">
+				and e.STATUS = #{status}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and e.BUILDING_ID = #{buildingId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select 
+			e.ROOM_ID as roomId,
+			e.ROOM_NAME as roomName,
+			c.CAMPUS_NAME campusName,
+			e.ROOM_CODE as roomCode,
+			e.STATUS as status,
+			e.ROOM_TYPE as roomType,
+			e.CREATE_TIME as createTime,
+			e.FLOOR as floor
+		from tb_equipment_room e 
+		left join tb_campus c on e.CAMPUS_ID = c.CAMPUS_ID
+		<where>
+			<if test="roomCode != null and roomCode != ''">
+				and e.ROOM_CODE = #{roomCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					c.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="roomType != null and roomType != ''">
+				and e.ROOM_TYPE = #{roomType}
+			</if>
+			<if test="roomName != null and roomName != ''">
+				and e.ROOM_NAME like '%${roomName}%'
+			</if>		
+			<if test="status != null and status != ''">
+				and e.STATUS = #{status}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and e.BUILDING_ID = #{buildingId}
+			</if>
+			<if test='floor != null'>
+				and e.FLOOR = #{floor}
+			</if>
+		</where>
+		ORDER BY e.CREATE_TIME DESC
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="location" resultType="java.util.Map">
+		SELECT 
+			ROOM_ID as roomId,
+			ROOM_NAME as roomName,
+			LONGITUDE as longitude,
+			LATITUDE as latitude,
+			FLOOR as floor
+		from tb_equipment_room
+		<where>
+			<if test="roomId != null and roomId != ''">
+	        	ROOM_ID = #{roomId}
+	        </if>
+	        <if test='roomCode != null and roomCode != ""'>
+	        	ROOM_CODE = #{roomCode}
+	        </if>
+	        <if test="buildingId != null and buildingId != ''">
+	        	BUILDING_ID = #{buildingId}
+	        </if>
+	        <if test="floor != null and floor != ''">
+	        	FLOOR = #{floor}
+	        </if>
+	        <foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+		</where>
+	</select>
+	
+	<select id="export" resultType="Map">
+		SELECT
+			IFNULL(er.ROOM_CODE ,'') as ROOM_CODE,
+			IFNULL(er.ROOM_NAME ,'') as ROOM_NAME,
+			IFNULL(t.`OPTION` ,'') as ROOM_TYPE,
+			IFNULL(er.AREA ,'') as AREA,
+			IFNULL(er.HOLD_BAR_NUM ,'') as HOLD_BAR_NUM,
+			IFNULL(er.FUNCTION ,'') as FUNCTION,
+			IFNULL(er.REMARK ,'') as REMARK,
+			IFNULL(er.LONGITUDE ,'') as LONGITUDE,
+			IFNULL(er.LATITUDE ,'') as LATITUDE,
+			IFNULL(er.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(i.`OPTION` ,'') as IS_RENT,
+			IFNULL(er.CREATE_TIME,'')as CREATE_TIME,
+			IFNULL(er.FLOOR ,'') as FLOOR,
+			IFNULL(p.employee_name ,'') as PRINCIPAL_NAME,
+			IFNULL(p.mobile ,'') as PRINCIPAL_MOBILE,
+			IFNULL(cr.employee_name ,'') as CREATE_PERSON_NAME,
+			IFNULL(ud.employee_name ,'') as UPDATE_PERSON_NAME,
+			IFNULL(u. NAME ,'') as USE_DEPT_NAME,
+			IFNULL(m. NAME ,'') as MANAGE_DEPT_NAME,
+			IFNULL(b.BUILDING_CODE ,'') as BUILDING_CODE,
+			IFNULL(c.CAMPUS_NAME ,'') as CAMPUS_NAME,
+			IFNULL(c.CAMPUS_CODE ,'') as CAMPUS_CODE
+		FROM tb_equipment_room er
+		LEFT JOIN tb_employee p ON er.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON er.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON er.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = er.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id = er.MANAGE_DEPT
+		LEFT JOIN tb_building b on er.BUILDING_ID = b.BUILDING_ID
+		LEFT JOIN tb_campus c on c.CAMPUS_ID  = er.CAMPUS_ID
+		LEFT JOIN tb_code s on s.CODE_ID = er.`STATUS`
+		LEFT JOIN tb_code t on t.CODE_ID = er.ROOM_TYPE
+		LEFT JOIN tb_code i on i.CODE_ID = er.IS_RENT
+		<where>
+			<if test="roomCode != null and roomCode != ''">
+				and e.ROOM_CODE = #{roomCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					c.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="roomType != null and roomType != ''">
+				and e.ROOM_TYPE = #{roomType}
+			</if>
+			<if test="roomName != null and roomName != ''">
+				and e.ROOM_NAME like '%${roomName}%'
+			</if>		
+			<if test="status != null and status != ''">
+				and e.STATUS = #{status}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and e.BUILDING_ID = #{buildingId}
+			</if>
+		</where>
+	</select>
+	
+	<select id = "query" resultType="Map">
+		SELECT
+			er.ROOM_ID as roomId,
+			er.ROOM_NAME as roomName,
+			er.PRINCIPAL as principal,
+			er.CREATE_PERSON_ID as createPersonId,
+			er.MANAGE_DEPT as manageDept,
+			er.STATUS as status,
+			er.ROOM_TYPE as roomType,
+			er.USE_DEPT as useDept,
+			er.AREA as area,
+			er.HOLD_BAR_NUM as holdBarNum,
+			er.FUNCTION as function,
+			er.REMARK as remark,
+			er.LONGITUDE as longitude,
+			er.LATITUDE as latitude,
+			er.UPDATE_TIME as updateTime,
+			er.IS_RENT as isRent,
+			er.CREATE_TIME createTime,
+			er.FLOOR as floor,
+			er.BUILDING_ID as buildingId,
+			er.CAMPUS_ID as campusId,
+			er.UPDATE_PERSON_ID as updatePersonId,
+			er.ROOM_CODE as roomCode,
+			p.employee_name as principalName,
+			p.mobile as principalMobile,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			u. NAME as useDeptName,
+			m. NAME as manageDeptName,
+			b.BUILDING_CODE as buildingCode,
+			c.CAMPUS_NAME as campusName,
+			c.CAMPUS_CODE as campusCode
+		from tb_equipment_room er
+		LEFT JOIN tb_employee p ON er.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON er.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON er.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_dept u ON u.id = er.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id = er.MANAGE_DEPT
+		LEFT JOIN tb_building b on er.BUILDING_ID = b.BUILDING_ID
+		LEFT JOIN tb_campus c on c.CAMPUS_ID  = er.CAMPUS_ID
+		<where>
+			<if test='roomId != null and roomId != ""'>
+				and er.ROOM_ID = #{roomId}
+			</if>
+			<if test='roomCode != null and roomCode != ""'>
+				and er.ROOM_CODE = #{roomCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT
+			ROOM_ID,
+			ROOM_CODE
+		FROM
+			tb_equipment_room
+		WHERE
+			<foreach collection="roomCodes" item="roomCode"
+				separator="or">
+				<if test='roomCode != null and "roomCode" != ""'>
+					ROOM_CODE = #{roomCode}
+				</if>
+			</foreach>
+	</select>
+</mapper>

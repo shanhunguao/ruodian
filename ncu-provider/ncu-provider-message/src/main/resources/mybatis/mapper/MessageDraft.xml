@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.MessageDraftMapper">
+
+	<select id="queryList" resultType="java.util.Map">
+		select
+			ID as id,
+			SUBJECT as subject,
+			CONTENT as content,
+			SEND_PERSON_ID as sendPersonId,
+			CREATE_TIME as createTime
+		from 
+			tb_message_draft
+		<where>
+			<if test='sendPerson != null'>
+				and SEND_PERSON_ID = #{sendPerson}
+			</if>
+		</where>
+		ORDER BY b.CREATE_TIME DESC 
+		<if
+			test='num != null and size != null and num > "-1" and size >"-1"'>
+			limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="getTotal" resultType="Integer">
+		select
+			count(id),
+		from 
+			tb_message_draft
+		<where>
+			<if test='sendPerson != null'>
+				and SEND_PERSON_ID = #{sendPerson}
+			</if>
+		</where>
+	</select>
+</mapper>

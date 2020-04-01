@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.UserMapper">
+
+	<select id="findAll" resultType="Employee">
+		select * from tb_employee;
+	</select>
+
+	<select id="getUser" parameterType="String"
+		resultType="Employee">
+		SELECT * FROM tb_employee
+		where employee_id = #{employeeId}
+	</select>
+
+	<insert id="insertUser" parameterType="Employee">
+		insert into
+		tb_employee(employee_id, employee_name, sex) values
+		(#{employeeId}, #{employeeName}, #{sex});
+	</insert>
+
+	<insert id="insertGetKey" parameterType="Employee"
+		useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		insert into
+		tb_employee(employee_id, employee_name, sex) values
+		(#{employeeId}, #{employeeName}, #{sex});
+	</insert>
+</mapper>

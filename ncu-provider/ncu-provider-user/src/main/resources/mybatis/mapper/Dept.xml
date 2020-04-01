@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.DeptMapper">
+
+
+    <resultMap id="getClass" type="com.ncu.springboot.biz.entity.Dept">
+        <id column="id" property="id"></id>
+        <result column="parent_id" property="parentId"></result>
+        <result column="name" property="name"></result>
+        <result column="update_time" property="updateTime"></result>
+        <collection property="postList" ofType="com.ncu.springboot.biz.entity.Posts" column="id">
+            <id column="pid" property="id"></id>
+            <result column="post_id" property="postId"></result>
+            <result column="post_name" property="postName"></result>
+            <result column="remark" property="remark"></result>
+            <association property="employee" javaType="com.ncu.springboot.biz.entity.Employee" column="id">
+                <id column="sid" property="id"></id>
+                <result column="employee_id" property="employeeId"></result>
+                <result column="employee_name" property="employeeName"></result>
+                <result column="sex" property="sex"></result>
+                <result column="mobile" property="mobile"></result>
+                <result column="email" property="email"></result>
+            </association>
+        </collection>
+    </resultMap>
+
+    <select id="deptList" resultType="com.ncu.springboot.biz.entity.Dept">
+        select * FROM tb_dept a ORDER BY a.update_time DESC
+    </select>
+
+    <select id="getDataById" resultMap="getClass">
+SELECT b.*,n.`id` AS pid,n.`post_id`,n.`post_name`,n.`remark`,m.`id` AS sid,m.`employee_id`,m.`employee_name`,m.`email`,m.`mobile`,m.`sex`
+FROM tb_dept_association a LEFT JOIN tb_dept b ON a.`dept_id`=b.`id`
+LEFT JOIN tb_posts n ON a.`posts_id`=n.`id` LEFT JOIN tb_employee m ON a.`employee_id`=m.`id`
+WHERE b.`id`=#{deptId}
+    </select>
+
+
+    <delete id="delDeptId">
+        DELETE FROM tb_dept_association WHERE dept_id=#{deptId}
+    </delete>
+
+<select id="findEmployee" resultType="java.lang.Integer">
+    SELECT dept_id FROM tb_dept_association WHERE employee_id=#{employeeId}
+</select>
+
+    <select id="findDept" resultType="java.lang.Integer">
+    SELECT * FROM tb_dept_association WHERE dept_id=#{deptId}
+</select>
+    <select id="find" resultType="com.ncu.springboot.biz.entity.Dept">
+        select * FROM tb_dept a
+        <where>
+            <if test="entity.id != null and entity.id != ''">
+                AND a.id = #{entity.id}
+            </if>
+            <if test="entity.name != null and entity.name!= ''">
+                AND a.name = #{entity.name}
+            </if>
+        </where>
+        ORDER BY a.update_time DESC
+    </select>
+
+
+	 <select id="getChild" resultType="String">
+        select 
+        	id
+        FROM 
+        	tb_dept
+        <where>
+        	<if test='deptIds != null'>
+				<foreach collection="deptIds" item="deptId" separator="or" open="and (" close=")">
+					<if test='deptId != null and deptId != ""'>
+						parent_id = #{deptId}
+					</if>
+				</foreach>
+			</if>
+        </where>
+    </select>
+
+</mapper>

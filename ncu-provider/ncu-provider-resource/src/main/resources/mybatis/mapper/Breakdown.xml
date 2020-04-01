@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.BreakdownMapper">
+	<select id="getTotal" resultType="Integer">
+		select
+			count(BREAKDOWN_ID)
+		from tb_breakdown
+		<where>
+			<if test='breakdownCode != null and breakdownCode != ""'>
+				and BREAKDOWN_CODE = #{breakdownCode}
+			</if>
+			<foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test='breakdownName != null and breakdownName != ""'>
+				and BREAKDOWN_NAME = #{breakdownName}
+			</if>
+			<if test='status != null and status != ""'>
+				and STATUS = #{STATUS}
+			</if>
+			<if test='fibercableId != null and fibercableId != ""'>
+				and FIBERCABLE_ID = #{fibercableId}
+			</if>
+			<if test='breakdownType != null and breakdownType != ""'>
+				and BREAKDOWN_TYPE = #{breakdownType}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryList" resultType="java.util.Map">
+		select
+			b.BREAKDOWN_ID as breakdownId,
+			b.BREAKDOWN_CODE as breakdownCode,
+			c.CAMPUS_NAME as campusName,
+			b.BREAKDOWN_NAME as breakdownName,
+			b.STATUS as status,
+			b.BREAKDOWN_TYPE as breakdownType,
+			b.CREATE_TIME as createTime
+		from tb_breakdown b
+		left join tb_campus c on
+		b.CAMPUS_ID = c.CAMPUS_ID
+		<where>
+			<if test='breakdownCode != null and breakdownCode != ""'>
+				and b.BREAKDOWN_CODE = #{breakdownCode}
+			</if>
+			<foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test='breakdownName != null and breakdownName != ""'>
+				and b.BREAKDOWN_NAME = #{breakdownName}
+			</if>
+			<if test='status != null and status != ""'>
+				and b.STATUS = #{STATUS}
+			</if>
+			<if test='breakdownType != null and breakdownType != ""'>
+				and b.BREAKDOWN_TYPE = #{breakdownType}
+			</if>
+		</where>
+		ORDER BY b.CREATE_TIME DESC
+		<if
+			test='num != null and size != null and num > "-1" and size >"-1"'>
+			 limit #{num},#{size}
+		</if>
+	</select>
+
+	<select id="location" resultType="java.util.Map">
+		select
+
+		from tb_breakdown
+		<where>
+			<if test=''>
+
+			</if>
+		</where>
+	</select>
+
+	<select id="export" resultType="java.util.Map">
+		select
+			IFNULL(f.FIBERCABLE_CODE,'') as FIBERCABLE_CODE,
+			IFNULL(pw.WELLHEAD_CODE,'') as WELLHEAD_CODE,
+			IFNULL(b.LOCATION,'') as LOCATION,
+			IFNULL(c.CAMPUS_NAME,'') as CAMPUS_NAME,
+			IFNULL(b.REMARK,'') as REMARK,
+			IFNULL(s.OPTION,'') as STATUS,
+			IFNULL(b.UPDATE_TIME,'') as UPDATE_TIME,
+			IFNULL(ud.EMPLOYEE_NAME,'') as UPDATE_PERSON_NAME,
+			IFNULL(b.CREATE_TIME,'') as CREATE_TIME,
+			IFNULL(cr.EMPLOYEE_NAME,'') as CREATE_PERSON_NAME,
+			IFNULL(t.OPTION,'') as BREAKDOWN_CODE,
+			IFNULL(b.BREAKDOWN_TYPE,'') as BREAKDOWN_TYPE,
+			IFNULL(b.BREAKDOWN_NAME,'') as BREAKDOWN_NAME
+		from tb_breakdown b
+		LEFT JOIN tb_fibercable f on b.FIBERCABLE_ID = f.FIBERCABLE_ID
+		LEFT JOIN tb_pipe_wellhead pw on b.WELLHEAD_ID = pw.WELLHEAD_ID
+		LEFT JOIN tb_campus c on b.CAMPUS_ID = c.CAMPUS_ID
+		LEFT JOIN view_user_employee cr on b.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud on b.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_code s on s.CODE_ID = b.STATUS
+		LEFT JOIN tb_code t on t.CODE_ID = b.BREAKDOWN_TYPE
+		<where>
+			<if test='breakdownCode != null and breakdownCode != ""'>
+				and BREAKDOWN_CODE = #{breakdownCode}
+			</if>
+			<foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test='breakdownName != null and breakdownName != ""'>
+				and BREAKDOWN_NAME = #{breakdownName}
+			</if>
+			<if test='status != null and status != ""'>
+				and STATUS = #{STATUS}
+			</if>
+			<if test='fibercableId != null and fibercableId != ""'>
+				and FIBERCABLE_ID = #{fibercableId}
+			</if>
+			<if test='breakdownType != null and breakdownType != ""'>
+				and BREAKDOWN_TYPE = #{breakdownType}
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="java.util.Map">
+		SELECT
+			b.BREAKDOWN_ID as breakdownId,
+			b.FIBERCABLE_ID as fibercableId,
+			b.WELLHEAD_ID as wellheadId,
+			b.LOCATION as location,
+			b.CAMPUS_ID as campusId,
+			b.REMARK as remark,
+			b.STATUS as status,
+			b.UPDATE_TIME as updateTime,
+			b.UPDATE_PERSON_ID as updatePersionId,
+			b.CREATE_TIME as createTime,
+			b.CREATE_PERSON_ID as createPersionId,
+			b.BREAKDOWN_CODE as breakdownCode,
+			b.BREAKDOWN_TYPE as breakdownType,
+			b.BREAKDOWN_NAME as breakdownName,
+			f.FIBERCABLE_CODE as fibercableCode,
+			pw.WELLHEAD_CODE as wellheadCode,
+			c.CAMPUS_NAME as campusName,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName
+		FROM
+			tb_breakdown b
+		LEFT JOIN tb_fibercable f on b.FIBERCABLE_ID = f.FIBERCABLE_ID
+		LEFT JOIN tb_pipe_wellhead pw on b.WELLHEAD_ID = pw.WELLHEAD_ID
+		LEFT JOIN tb_campus c on b.CAMPUS_ID = c.CAMPUS_ID
+		LEFT JOIN view_user_employee cr on b.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud on b.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		<where>
+			<if test='breakdownId != null and breakdownId != ""'>
+				and b.BREAKDOWN_ID = #{breakdownId}
+			</if>
+			<if test='breakdownCode != null and breakdownCode != ""'>
+				and b.BREAKDOWN_CODE = #{breakdownCode}
+			</if>
+		</where>
+	</select>
+</mapper>

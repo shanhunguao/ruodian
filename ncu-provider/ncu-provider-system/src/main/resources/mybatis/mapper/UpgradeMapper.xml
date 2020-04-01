@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.provider.system.dao.UpgradeMapper">
+
+    <select id="checkUpgrade" resultType="com.ncu.springboot.biz.entity.Upgrade">
+        SELECT * from tb_upgrade where old_version = #{old_version}
+    </select>
+
+</mapper>

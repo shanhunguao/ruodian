@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.LogMapper">
+
+	<select id="queryLogByRole" resultType="Map">
+		select
+			l.id,
+			l.status,
+			l.temperature,
+			l.user_id as userId,
+			l.card_id as cardId,
+			l.gate_id as gateId,
+			l.guard_id as guardId,
+			l.create_time as createTime,
+			t.user_name as guardName,
+			g.gate_name as gateName,
+			c.campus_name as campusName,
+			IFNULL(IFNULL(ut.user_name,us.user_name),utp.user_name) as userName,
+			l.remark
+		from
+			gate_log l
+		left join
+			tb_teacher t on l.guard_id = t.user_id
+		left join
+			gate_gate g on g.gate_id = l.gate_id
+		left join
+			tb_campus c on c.campus_id = g.campus_id
+		left join
+			tb_teacher ut on l.user_id = ut.user_id
+		left join
+			tb_student us on l.user_id = us.user_id
+		left join
+			gate_temp_persion utp on l.user_id = utp.user_id
+		<where>
+			<if test='userId != null and userId != ""'>
+				and l.guard_id = #{userId}
+			</if>
+			<if test='date != null and date != ""'>
+				and date(l.create_time) = date(#{date})
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="queryLog" resultType="Map">
+		select
+			l.id,
+			l.status,
+			l.temperature,
+			l.user_id as userId,
+			l.card_id as cardId,
+			l.gate_id as gateId,
+			l.guard_id as guardId,
+			l.create_time as createTime,
+			t.user_name as guardName,
+			g.gate_name as gateName,
+			c.campus_name as campusName,
+			IFNULL(IFNULL(ut.user_name,us.user_name),utp.user_name) as userName,
+			l.remark
+		from
+			gate_log l
+		left join
+			tb_teacher t on l.guard_id = t.user_id
+		left join
+			gate_gate g on g.gate_id = l.gate_id
+		left join
+			tb_campus c on c.campus_id = g.campus_id
+		left join
+			tb_teacher ut on l.user_id = ut.user_id
+		left join
+			tb_student us on l.user_id = us.user_id
+		left join
+			gate_temp_persion utp on l.user_id = utp.user_id
+		<where>
+			<if test='userId != null and userId != ""'>
+				and l.user_id = #{userId}
+			</if>
+			<if test='date != null and date != ""'>
+				and date(l.create_time) = date(#{date})
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+</mapper>

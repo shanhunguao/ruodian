@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.GuardMapper">
+	<select id="queryApply" resultType="Map" parameterType="String">
+		select
+			a.id as applyId,
+			a.user_id as userId,
+			a.card_id as cardId,
+			a.start_time as startTime,
+			a.end_time as endTime,
+			a.status,
+			a.check_remark as checkRemark,
+			a.check_persion as checkPersion,
+			a.check_time as checkTime,
+			c.campus_name as applyCampus,
+			IFNULL(cpt.user_name,cps.user_name) as checkPersionName,
+			IFNULL(cpt.mobile,cps.mobile)as checkPersionMobile
+		from
+			gate_apply a
+		left join
+			tb_teacher t on a.user_id = t.user_id
+		left join
+			tb_student s on s.user_id = a.user_Id
+		left join
+			tb_campus c on c.campus_id = a.campus_id
+		left join
+			tb_student cps on cps.user_id = a.check_persion
+		left join
+			tb_teacher cpt on cpt.user_id = a.check_persion
+		<where>
+			<if test='_parameter != null'>
+				and a.user_id = #{userId}
+			</if>
+				and a.status in ('0','1','2','4','5')
+				and curdate() between date(a.start_time) and date(a.end_time)
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select
+			g.id,
+			g.gate_id as gateId,
+			g.gate_name as gateName,
+			g.campus_id as campusId,
+			g.create_time as createTime,
+			g.update_time as updateTime,
+			c.campus_name as campusName
+		from 
+			gate_gate g
+		left join
+			tb_campus c on c.campus_id = g.campus_id
+		<where>
+			<if test='id != null'>
+				and g.gate_id = #{id}
+			</if>
+			<if test='campusId != null'>
+				and g.campus_id = #{campusId}
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="getTotal" resultType="Map">
+		select
+			count(g.gate_id) as count
+		from 
+			gate_gate g
+		<where>
+			<if test='id != null'>
+				and g.gate_id = #{id}
+			</if>
+			<if test='campusId != null'>
+				and g.campus_id = #{campusId}
+			</if>
+		</where>
+	</select>
+</mapper>

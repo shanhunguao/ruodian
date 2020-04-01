@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.springboot.provider</groupId>
+		<artifactId>ncu-provider</artifactId>
+		<version>1.0-RELEASE</version>
+	</parent>
+
+	<artifactId>ncu-provider-common</artifactId>
+	<name>ncu-provider-common</name>
+	<packaging>jar</packaging>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.springboot.ncu.common</groupId>
+			<artifactId>ncu-common</artifactId>
+			<version>1.0-RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.springboot</groupId>
+			<artifactId>common-redis</artifactId>
+			<version>1.0-RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.springboot</groupId>
+			<artifactId>common-mybatis</artifactId>
+			<version>1.0-RELEASE</version>
+		</dependency>
+
+	</dependencies>
+</project>

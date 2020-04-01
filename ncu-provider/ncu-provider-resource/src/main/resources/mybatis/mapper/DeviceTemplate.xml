@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.DeviceTemplateMapper">
+	
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(TEMPLATE_ID)
+		from tb_device_template
+		<where>
+			<if test="status != null and status != ''">
+				STATUS = #{status}
+			</if>
+			<if test="manufactor != null and manufactor != ''">
+				MANUFACTOR = #{manufactor}
+			</if>
+			<if test="deviceModel != null and deviceModel != ''">
+				DEVICE_MODEL like '%${deviceModel}%'
+			</if>
+			<if test="templateName != null and templateName != ''">
+				TEMPLATE_NAME like '%${templateName}%'
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select 
+			t.TEMPLATE_ID as templateId,
+			t.TEMPLATE_NAME as templateName,
+			d.NAME as name,
+			t.DEVICE_MODEL as deviceModel,
+			t.STATUS as status,
+			t.CREATE_TIME as createTime
+		from tb_device_template t
+		left join tb_dept d on t.MANUFACTOR = d.ID
+		<where>
+			<if test="status != null and status != ''">
+				t.STATUS = #{status}
+			</if>
+			<if test="manufactor != null and manufactor != ''">
+				t.MANUFACTOR = #{manufactor}
+			</if>
+			<if test="deviceModel != null and deviceModel != ''">
+				t.DEVICE_MODEL like '%${deviceModel}%'
+			</if>
+			<if test="templateName != null and templateName != ''">
+				t.TEMPLATE_NAME like '%${templateName}%'
+			</if>
+		</where>
+		ORDER BY t.CREATE_TIME DESC
+	</select>
+	
+	<select id="query" resultType="Map">
+		SELECT
+			dt.TEMPLATE_ID as templateId,
+			dt.TEMPLATE_NAME as templateName,
+			dt.AREA as area,
+			dt.MANUFACTOR as manufactor,
+			dt.DEVICE_MODEL as deviceModel,
+			dt.DEVICE_TYPE as deviceType,
+			dt.POWER as power,
+			dt.FUNCTION as function,
+			dt.UPDATE_TIME as updateTime,
+			dt.CREATE_TIME as createTime,
+			dt.CREATE_PERSON_ID as createPerson,
+			dt.STATUS as status,
+			dt.UPDATE_PERSON_ID as updatePersonId,
+			dt.HEIGHT as height,
+			dt.LENGTH as length,
+			dt.WIDTH as width,
+			s.supplier_name as manufactorName,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName
+		from tb_device_template dt
+		LEFT JOIN view_user_employee cr ON dt.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON dt.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_supplier s on s.id = dt.MANUFACTOR
+		where 
+			dt.TEMPLATE_ID = #{templateId}
+	</select>
+
+</mapper>

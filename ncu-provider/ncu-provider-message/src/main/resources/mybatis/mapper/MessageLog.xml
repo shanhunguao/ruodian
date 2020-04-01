@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.MessageLogMapper">
+
+	<select id="getTotal" resultType="Integer">
+		SELECT
+			count(ml.id)
+		FROM
+			tb_message_log ml
+		LEFT JOIN 
+			tb_message m ON ml.Message_id = m.MESSAGE_ID
+		LEFT JOIN 
+			tb_dept_association da on m.SEND_PERSON_ID = da.employee_id
+		LEFT JOIN
+			tb_employee e ON e.employee_id = m.SEND_PERSON_ID
+		<where>
+			<if test='employeeId != null and employeeId != ""'>
+				and m.SEND_PERSON_ID = #{employeeId}
+			</if>
+			<if test='employeeName != null and employeeName != ""'>
+				and e.employee_name = #{employeeName}
+			</if>
+			<if test='messageId != null and messageId != ""'>
+				and m.MESSAGE_ID = #{messageId}
+			</if>
+			<if test='subject != null and subject != ""'>
+				and m.SUBJECT like '%#{subject}%'
+			</if>
+			<if test='content != null and content != ""'>
+				and m.CONTENT like '%#{content}%'
+			</if>
+			<if test='operate != null and operate != ""'>
+				and ml.OPERATE = #{operate}
+			</if>
+			<if test='endTime != null and endTime != ""'>
+				and <![CDATA[ml.OPERATE_TIME <= #{endTime}]]>
+			</if>
+			<if test='startTime != null and startTime != ""'>
+				and ml.OPERATE_TIME >= #{startTime}
+			</if>
+			<if test='deptId != null and deptId != ""'>
+				and da.dept_id = #{deptId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		SELECT
+			ml.ID as id,
+			ml.MESSAGE_ID as messageId,
+			ml.OPERATE as operate,
+			ml.OPERATE_PERSION_ID as operatePersionId,
+			ml.OPERATE_TIME as operateTime
+		FROM
+			tb_message_log ml
+		LEFT JOIN 
+			tb_message m ON ml.Message_id = m.MESSAGE_ID
+		LEFT JOIN 
+			tb_dept_association da on m.SEND_PERSON_ID = da.employee_id
+		LEFT JOIN
+			tb_employee e ON e.employee_id = m.SEND_PERSON_ID
+		<where>
+			<if test='employeeId != null and employeeId != ""'>
+				and m.SEND_PERSON_ID = #{employeeId}
+			</if>
+			<if test='employeeName != null and employeeName != ""'>
+				and e.employee_name = #{employeeName}
+			</if>
+			<if test='messageId != null and messageId != ""'>
+				and m.MESSAGE_ID = #{messageId}
+			</if>
+			<if test='subject != null and subject != ""'>
+				and m.SUBJECT like '%#{subject}%'
+			</if>
+			<if test='content != null and content != ""'>
+				and m.CONTENT like '%#{content}%'
+			</if>
+			<if test='operate != null and operate != ""'>
+				and ml.OPERATE = #{operate}
+			</if>
+			<if test='endTime != null and endTime != ""'>
+				and <![CDATA[ml.OPERATE_TIME <= #{endTime}]]>
+			</if>
+			<if test='startTime != null and startTime != ""'>
+				and ml.OPERATE_TIME >= #{startTime}
+			</if>
+			<if test='deptId != null and deptId != ""'>
+				and da.dept_id = #{deptId}
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+
+</mapper>

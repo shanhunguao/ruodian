@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.BuildingPlanMapper">
+
+	<select id="queryList" resultType="java.util.Map">
+		select 
+			bp.PLAN_ID as planId,
+			bp.BUILDING_ID as buildingId,
+			bp.PLAN_DATA as planData,
+			bp.UPDATE_TIME as updateTime,
+			bp.CREATE_TIME as createTime,
+			bp.CREATE_PERSON_ID as createPersonId,
+			bp.FLOOR_NUM as floorNum,
+			bp.UPDATE_PERSON_ID as updatePersonId,
+			cr.EMPLOYEE_NAME as createPersonName,
+			ud.EMPLOYEE_NAME as updatePersonName,
+			tb.BUILDING_NAME as buildingName,
+			bp.FILE_PATH as filePath
+		from 
+			tb_building_plan bp
+		LEFT JOIN view_user_employee cr on bp.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud on bp.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_building tb on tb.BUILDING_ID = bp.BUILDING_ID
+		<where>
+			<if test='buildingId != null and buildingId != ""'>
+				bp.BUILDING_ID = #{buildingId}
+			</if>
+			<if test='campusId != null and campusId != ""'>
+				bp.CAMPUS_ID = #{campusId}
+			</if>
+			<if test='floorNum != null and floorNum != ""'>
+				bp.FLOOR_NUM = #{floorNum}
+			</if>
+		</where>
+	</select>
+</mapper>

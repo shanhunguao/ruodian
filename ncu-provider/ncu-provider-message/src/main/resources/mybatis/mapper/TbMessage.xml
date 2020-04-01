@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.TbMessageMapper">
+
+	<select id="queryList" resultType="java.util.Map">
+		SELECT
+			m.MESSAGE_ID as messageId,
+			m.STATUS as status,
+			m.MESSAGE_TYPE as messageType,
+			m.SUBJECT as subject,
+			m.CONTENT as content,
+			m.URL as url,
+			m.SEND_TIME as sendTime,
+			m.SEND_PERSON_ID as sendPersonId,
+			m.CREATE_TIME as createTime,
+			mo.RECEIVE_OBJECT as receiveObject,
+			mo.RECEIVE_TYPE as ReceiveType,
+			mt.RECEIVE_TO as receiveTo,
+			mt.ID as toId,
+			da.DEPT_ID as deptId,
+			GROUP_CONCAT(mf.FILE_PATH) as filePath
+		FROM
+			tb_message m
+		LEFT JOIN tb_message_object mo on m.MESSAGE_ID = mo.MESSAGE_ID
+		LEFT JOIN tb_message_to mt on mt.OBJECT_ID = mo.OBJECT_ID
+		LEFT JOIN tb_employee e on e.employee_id = m.SEND_PERSON_ID
+		LEFT JOIN tb_dept_association da ON e.`id`=da.`employee_id`
+		LEFT JOIN tb_dept d on d.id = mo.RECEIVE_OBJECT
+		LEFT JOIN tb_message_file mf on mf.MESSAGE_ID = m.MESSAGE_ID
+		<where>
+			<if test='messageId != null'>
+				and m.MESSAGE_ID = #{messageId}
+			</if>
+			<if test='to != null and to != ""'>
+				and mt.RECEIVE_TO = #{to} or d.id  = #{to}
+			</if>
+			<if test='deptId != null and deptId != ""'>
+				and da.DEPT_ID = #{deptId}
+			</if>
+			<if test='sendPerson != null and sendPerson != ""'>
+				and m.SEND_PERSON_ID = #{sendPerson}
+			</if>
+			<if test='endTime != null and endTime != ""'>
+				and <![CDATA[m.SEND_TIME <= #{endTime}]]>
+			</if>
+			<if test='startTime != null and startTime != ""'>
+				and m.SEND_TIME >= #{startTime}
+			</if>
+			<if test='status != null'>
+				and mt.STATUS = #{status}
+			</if>
+			<if test='subject != null and subject != ""'>
+				and m.SUBJECT like '%#{subject}%'
+			</if>
+			<if test='content != null and content != ""'>
+				and m.CONTENT like '%#{content}%'
+			</if>
+		</where>
+		GROUP BY mt.RECEIVE_TO,mo.RECEIVE_TYPE,mt.ID,mo.RECEIVE_OBJECT,m.MESSAGE_ID,da.DEPT_ID
+	</select>
+</mapper>

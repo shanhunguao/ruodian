@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.BuildingMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select
+			count(b.BUILDING_ID)
+		from tb_building b
+		<where>
+			<if test="buildingCode != null and buildingCode != ''">
+				and b.BUILDING_CODE =#{buildingCode}
+			</if>
+			<foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="buildingName != null and buildingName != ''">
+				and b.BUILDING_NAME like '%${buildingName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and b.STATUS = #{status}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryList" resultType="java.util.Map">
+		select
+			b.BUILDING_ID as buildingId,
+			b.BUILDING_NAME as buildingName,
+			b.BUILDING_CODE as buildingCode,
+			b.STATUS as status,
+			c.CAMPUS_NAME as campusName,
+			b.FLOOR_NUM as floorNum,
+			b.CREATE_TIME as createTime
+		from tb_building b
+		left join tb_campus c on b.CAMPUS_ID = c.CAMPUS_ID
+		<where>
+			<if test="buildingCode != null and buildingCode != ''">
+				and b.BUILDING_CODE =#{buildingCode}
+			</if>
+			<foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="buildingName != null and buildingName != ''">
+				and b.BUILDING_NAME like '%${buildingName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and b.STATUS = #{status}
+			</if>
+		</where>
+		ORDER BY b.CREATE_TIME DESC 
+		<if
+			test='num != null and size != null and num > "-1" and size >"-1"'>
+			limit #{num},#{size}
+		</if>
+	</select>
+
+	<select id="location" resultType="java.util.Map">
+		select
+			BUILDING_ID as buildingId,
+			BUILDING_NAME as buildingName,
+			LONGITUDE as longitude,
+			LATITUDE as latitude,
+			FLOOR_NUM as floorNum
+		from tb_building
+		<where>
+			<if test="buildingId != null and buildingId != ''">
+				and BUILDING_ID = #{buildingId}
+			</if>
+			<foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="buildingCode != null and buildingCode != ''">
+				and BUILDING_CODE = #{buildingCode}
+			</if>
+		</where>
+	</select>
+
+	<select id="export" resultType="java.util.Map">
+		select
+			IFNULL(b.BUILDING_CODE,'')as BUILDING_CODE,
+			IFNULL(b.BUILDING_NAME,'')as BUILDING_NAME,
+			IFNULL(s.OPTION,'')as STATUS,
+			IFNULL(b.REMARK,'')as REMARK,
+			IFNULL(b.LONGITUDE,'')as LONGITUDE,
+			IFNULL(b.LATITUDE,'')as LATITUDE,
+			IFNULL(m.NAME,'')as MANAGE_DEPT_NAME,
+			IFNULL(u.NAME,'')as USE_DEPT_NAME,
+			IFNULL(b.CREATE_TIME,'')as CREATE_TIME,
+			IFNULL(p.EMPLOYEE_NAME,'')as PRINCIPAL_NAME,
+			IFNULL(p.MOBILE,'')as PRINCIPAL_MOBILE,
+			IFNULL(cr.EMPLOYEE_NAME,'')as CREATE_PERSON_NAME,
+			IFNULL(ud.EMPLOYEE_NAME,'')as UPDATE_PERSON_NAME,
+			IFNULL(b.UPDATE_TIME,'')as UPDATE_TIME,
+			IFNULL(b.FUNCTION,'')as FUNCTION,
+			IFNULL(b.AERA,'')as AERA,
+			IFNULL(b.FLOOR_NUM,'')as FLOOR_NUM,
+			IFNULL(c.CAMPUS_NAME,'')as CAMPUS_NAME
+		from TB_BUILDING b
+		LEFT JOIN tb_code s on s.CODE_ID = b.STATUS
+		LEFT JOIN tb_dept m on b.MANAGE_DEPT = m.NAME
+		LEFT JOIN tb_dept u on b.MANAGE_DEPT = u.NAME
+		LEFT JOIN tb_employee p on b.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr on b.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud on b.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_campus	c on c.CAMPUS_ID = b.CAMPUS_ID
+		<where>
+			<if test="buildingCode != null and buildingCode != ''">
+				and BUILDING_CODE =#{buildingCode}
+			</if>
+			<foreach collection="campusIds" item="campusId"
+				separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="buildingName != null and buildingName != ''">
+				and BUILDING_NAME like '%${buildingName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and STATUS = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="java.util.Map">
+		SELECT
+			b.BUILDING_ID as buildingId,
+			b.BUILDING_NAME as buildingName,
+			b.STATUS as status,
+			b.REMARK as remark,
+			b.LONGITUDE as longitude,
+			b.LATITUDE as latitude,
+			b.UPDATE_TIME as updateTime,
+			b.MANAGE_DEPT as manageDept,
+			b.USE_DEPT as useDept,
+			b.CREATE_TIME as createTime,
+			b.PRINCIPAL as principal,
+			b.CREATE_PERSON_ID as createPersonId,
+			b.FUNCTION as function,
+			b.AERA as aera,
+			b.FLOOR_NUM as floorNum,
+			b.CAMPUS_ID as campusId,
+			b.UPDATE_PERSON_ID as updatePersonId,
+			b.BUILDING_CODE as buildingCode,
+			m.name as manageDeptName,
+			u.name as useDeptName,
+			p.employee_name as principalName,
+			p.mobile as principalMobile,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			c.CAMPUS_NAME as campusName
+		FROM tb_building b
+		LEFT JOIN tb_dept m on b.MANAGE_DEPT = m.NAME
+		LEFT JOIN tb_dept u on b.MANAGE_DEPT = u.NAME
+		LEFT JOIN tb_employee p on b.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr on b.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud on b.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_campus	c on c.CAMPUS_ID = b.CAMPUS_ID
+		<where>
+			<if test='buildingId != null and buildingId != ""'>
+				and b.BUILDING_ID = #{buildingId}
+			</if>
+			<if test=' buildingCode != null and buildingCode != ""'>
+				and b.BUILDING_CODE = #{buildingCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT 
+			BUILDING_ID,
+			BUILDING_CODE
+		FROM 
+			tb_building
+		WHERE
+			<foreach collection="buildingCodes" item="buildingCode"
+				separator="or">
+				<if test='buildingCode != null and buildingCode != ""'>
+					BUILDING_CODE = #{buildingCode}
+				</if>
+			</foreach>
+	</select>
+</mapper>

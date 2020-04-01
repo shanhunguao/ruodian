@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.FibercableMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(FIBERCABLE_ID) 
+		from tb_fibercable 
+		<where>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="fibercableCode != null and fibercableCode != ''">
+				and FIBERCABLE_CODE = #{fibercableCode}
+			</if>
+			<if test="fibercableName != null and fibercableName != ''">
+				and FIBERCABLE_NAME like '%${fibercableName}%'
+			</if>
+			<if test="status !=null and status != ''">
+				and STATUS = #{status}
+			</if>
+			<if test="fibercableType !=null and fibercableType != ''">
+				and FIBERCABLE_TYPE = #{fibercableType}
+			</if>
+			<if test="originWellhead != null and originWellhead != ''">
+				and ORIGIN_WELLHEAD = #{originWellhead}
+			</if>
+			<if test="endWellhead != null and endWellhead != ''">
+				and  END_WELLHEAD = #{endWellhead}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select 
+			f.FIBERCABLE_ID as fibercableId,
+			f.FIBERCABLE_NAME as fibercableName,
+			f.TOTAL_CORE_NUM as totalCoreNum,
+			f.FIBERCABLE_CODE as fibercableCode,
+			f.STATUS as status,
+			c.CAMPUS_NAME as campusName,
+			f.FIBERCABLE_CODE as fibercableCode,
+			f.CREATE_TIME as createTime
+		from tb_fibercable f 
+		left join tb_campus c on f.CAMPUS_ID = c.CAMPUS_ID
+		<where>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					f.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="fibercableCode != null and fibercableCode != ''">
+				and f.FIBERCABLE_CODE = #{fibercableCode}
+			</if>
+			<if test="fibercableName != null and fibercableName != ''">
+				and f.FIBERCABLE_NAME like '%${fibercableName}%'
+			</if>
+			<if test="status !=null and status != ''">
+				and f.STATUS = #{status}
+			</if>
+			<if test="fibercableType !=null and fibercableType != ''">
+				and f.FIBERCABLE_TYPE = #{fibercableType}
+			</if>
+			<if test="originWellhead != null and originWellhead != ''">
+				and f.ORIGIN_WELLHEAD = #{originWellhead}
+			</if>
+			<if test="endWellhead != null and endWellhead != ''">
+				and  f.END_WELLHEAD = #{endWellhead}
+			</if>
+		</where>
+		ORDER BY f.CREATE_TIME DESC
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="export" resultType="Map">
+		SELECT
+			IFNULL(f.FIBERCABLE_CODE ,'') as FIBERCABLE_CODE,
+			IFNULL(f.FIBERCABLE_NAME ,'') as FIBERCABLE_NAME,
+			IFNULL(t.`OPTION` ,'') as FIBERCABLE_TYPE,
+			IFNULL(f.TOTAL_CORE_NUM ,'') as TOTAL_CORE_NUM,
+			IFNULL(f.LAYOUT_TIME ,'') as LAYOUT_TIME,
+			IFNULL(f.CREATE_TIME ,'') as CREATE_TIME,
+			IFNULL(s.`OPTION` ,'') as STATUS,
+			IFNULL(f.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(f.FUNCTION ,'') as FUNCTION,
+			IFNULL(opw.WELLHEAD_CODE ,'') as ORIGIN_WELLHEAD_CODE,
+			IFNULL(opw.WELLHEAD_CODE ,'') as END_WELLHEAD_CODE,
+			IFNULL(fp.FIBERCABLE_CODE ,'') as PARENT_CODE,
+			IFNULL(f.LENGTH ,'') as LENGTH,
+			IFNULL(p.employee_name ,'') as PRINCIPAL_NAME,
+			IFNULL(p.mobile ,'') as PRINCIPAL_MOBILE,
+			IFNULL(cr.employee_name ,'') as CREATE_PERSON_NAME,
+			IFNULL(ud.employee_name ,'') as UPDATE_PERSON_NAME,
+			IFNULL(u. NAME ,'') as USE_DEPT_NAME,
+			IFNULL(m. NAME ,'') as MANAGE_DEPT_NAME,
+			IFNULL(mp.employee_name ,'') as MAINTAIN_PERSON_NAME,
+			IFNULL(mp.mobile ,'') as MAINTAIN_PERSON_MOBILE,
+			IFNULL(c.CAMPUS_NAME ,'') as CAMPUS_NAME
+		FROM 
+			tb_fibercable f
+		LEFT JOIN tb_employee p ON f.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON f.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON f.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_employee mp on mp.id = f.MAINTAIN_PERSON
+		LEFT JOIN tb_dept u ON u.id = f.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id =f.MANAGE_DEPT
+		LEFT JOIN tb_code s on s.CODE_ID = f.`STATUS`
+		LEFT JOIN tb_code t on t.CODE_ID = f.`STATUS`
+		LEFT JOIN tb_campus c on c.CAMPUS_ID = f.CAMPUS_ID
+		LEFT JOIN tb_fibercable fp on fp.FIBERCABLE_ID = f.PARENT_ID
+		LEFT JOIN tb_pipe_wellhead opw on opw.WELLHEAD_ID = f.ORIGIN_WELLHEAD
+		LEFT JOIN tb_pipe_wellhead epw on epw.WELLHEAD_ID = f.END_WELLHEAD
+		<where>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					f.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="fibercableCode != null and fibercableCode != ''">
+				and f.FIBERCABLE_CODE = #{fibercableCode}
+			</if>
+			<if test="fibercableName != null and fibercableName != ''">
+				and f.FIBERCABLE_NAME like '%${fibercableName}%'
+			</if>
+			<if test="status !=null and status != ''">
+				and f.STATUS = #{status}
+			</if>
+			<if test="fibercableType !=null and fibercableType != ''">
+				and f.FIBERCABLE_TYPE = #{fibercableType}
+			</if>
+			<if test="originWellhead != null and originWellhead != ''">
+				and f.ORIGIN_WELLHEAD = #{originWellhead}
+			</if>
+			<if test="endWellhead != null and endWellhead != ''">
+				and  f.END_WELLHEAD = #{endWellhead}
+			</if>
+		</where>
+	</select>
+	
+	<select id="location" resultType="Map">
+		SELECT
+			a.FIBERCABLE_ID as fibercableId,
+			a.FIBERCABLE_NAME as fibercableName,
+			a.ORIGIN_WELLHEAD as originWellhead,
+			a.END_WELLHEAD as endWellhead,
+			a.PIPELINE_ID as pipelineId,
+			a.PIPELINE_NAME as pipelineName,
+			GROUP_CONCAT(a.WELLHEAD_ID) as wellheadId,
+			GROUP_CONCAT(a.WELLHEAD_NAME) as wellheadName,
+			CONCAT('[',GROUP_CONCAT(a.location),']') as location
+		from 
+			(SELECT f.FIBERCABLE_ID,
+				f.FIBERCABLE_NAME,
+				f.ORIGIN_WELLHEAD,
+				f.END_WELLHEAD,
+				p.PIPELINE_ID,
+				p.PIPELINE_NAME,
+				w.WELLHEAD_ID,
+				w.WELLHEAD_NAME,
+				CONCAT('[',w.LATITUDE,',',w.LONGITUDE,']') as location from tb_fibercable f
+			LEFT JOIN tb_fibercable_pipeline fp on f.FIBERCABLE_ID = fp.FIBERCABLE_ID
+			LEFT JOIN tb_pipeline p on p.PIPELINE_ID = fp.PIPELINE_ID 
+			LEFT JOIN tb_pipe_wellhead w on (p.WELLHEAD_ID1 = w.WELLHEAD_ID or p.WELLHEAD_ID2 = w.WELLHEAD_ID)
+		<where>
+			<if test="fibercableId != null and fibercableId != ''">
+				f.FIBERCABLE_ID = #{fibercableId}
+			</if>
+			<if test='fibercableCode != null and fibercableCode != ""'>
+				f.FIBERCABLE_CODE = #{fibercableCode}
+			</if>
+			<if test='campusIds !=null and campusIds != ""'>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					w.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			</if>
+		</where>
+		)a GROUP BY a.PIPELINE_ID
+	</select>
+	
+	<update id="delByPipeLine">
+		update tb_fibercable f
+		left join tb_fibercable_pipeline fp on f.FIBERCABLE_ID = fp.FIBERCABLE_ID
+			set	f.status = #{status}
+		<where>
+			<foreach collection="pipelineIds" item="pipelineId" separator="or" open="and (" close=")">
+				<if test='pipelineId != null and pipelineId != ""'>
+					PIPELINE_ID = #{pipelineId}
+				</if>
+			</foreach>
+		</where>
+	</update>
+	
+	<select id="selectByPipelineId" resultType="com.ncu.springboot.api.resource.entity.Fibercable">
+		select 
+			f.*
+		from tb_fibercable f
+		left join tb_fibercable_pipeline fp on f.FIBERCABLE_ID = fp.FIBERCABLE_ID
+		<where>
+			<foreach collection="pipelineIds" item="pipelineId" separator="or" open="and (" close=")">
+				<if test='pipelineId != null and pipelineId != ""'>
+					PIPELINE_ID = #{pipelineId}
+				</if>
+			</foreach>
+		</where>
+	</select>
+	
+	<select id="query" resultType="Map">
+		SELECT
+			f.FIBERCABLE_ID as fibercableId,
+			f.FIBERCABLE_NAME as fibercableName,
+			f.FIBERCABLE_TYPE as fibercableType,
+			f.TOTAL_CORE_NUM as totalCoreNum,
+			f.FIBERCABLE_CODE as fibercableCode,
+			f.LAYOUT_TIME as layoutTime,
+			f.PRINCIPAL as principal,
+			f.CREATE_TIME as createTime,
+			f.CREATE_PERSON_ID as createPersonId,
+			f.MAINTAIN_PERSON as maintainPerson,
+			f.MANAGE_DEPT as manageDept,
+			f.STATUS as status,
+			f.CAMPUS_ID as campusId,
+			f.UPDATE_TIME as updateTime,
+			f.FUNCTION as function,
+			f.USE_DEPT as useDept,
+			f.ORIGIN_WELLHEAD as originWellhead,
+			f.END_WELLHEAD as endWellhead,
+			f.UPDATE_PERSON_ID as updatePersonId,
+			f.PARENT_ID as parentId,
+			f.LENGTH as length,
+			p.employee_name as principalName,
+			p.mobile as principalMobile,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			u. NAME as useDeptName,
+			m. NAME as manageDeptName,
+			pl.PIPELINE_CODE as pipelineCode,
+			mp.employee_name as maintainPersonName,
+			mp.mobile as maintainPersonMobile
+			from tb_fibercable f
+		LEFT JOIN tb_employee p ON f.PRINCIPAL = p.id
+		LEFT JOIN view_user_employee cr ON f.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON f.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_employee mp on mp.id = f.MAINTAIN_PERSON
+		LEFT JOIN tb_dept u ON u.id = f.USE_DEPT
+		LEFT JOIN tb_dept m ON m.id =f.MANAGE_DEPT
+		LEFT JOIN tb_pipeline pl ON pl.PIPELINE_ID = f.PARENT_ID
+		<where>
+			<if test="fibercableId != null and fibercableId != ''">
+				and f.FIBERCABLE_ID = #{fibercableId}
+			</if>
+			<if test="fibercableCode != null and fibercableCode != ''">
+				and f.FIBERCABLE_CODE = #{fibercableCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT
+			FIBERCABLE_ID,
+			FIBERCABLE_CODE
+		FROM
+			tb_fibercable
+		WHERE
+			<foreach collection="fibercableCodes" item="fibercableCode"
+				separator="or">
+				<if test='fibercableCode != null and fibercableCode != ""'>
+					FIBERCABLE_CODE = #{fibercableCode}
+				</if>
+			</foreach>
+	</select>
+</mapper>

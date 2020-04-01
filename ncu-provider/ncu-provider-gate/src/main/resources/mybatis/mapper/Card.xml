@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.CardMapper">
+
+    <select id="getInfoByStudent" resultType="Map">
+        select
+        s.id,
+        s.user_id as userId,
+        s.user_name as userName,
+        s.sex,
+        s.id_card as idCard,
+        s.mobile,
+        s.campus,
+        s.college,
+        d.name as collegeName,
+        s.major,
+        m.major_name as majorName,
+        s.grade,
+        cl.class_name as className,
+        s.origin_place as originPlace,
+        c.card_id as cardId,
+        c.img_path as imgPath,
+        c.status as cardStatus
+        from
+        tb_student s
+        left join
+        gate_card c on s.user_id = c.user_id
+        left join
+        tb_dept d on d.id = s.college
+        left join
+        tb_major m on m.major_id = s.major
+        left join
+        tb_class cl on cl.class_id = s.class
+        <where>
+            <if test='userId != null and userId != ""'>
+                and s.user_id = #{userId}
+            </if>
+            <if test='cardId != null and cardId != ""'>
+                and c.card_id = #{cardId}
+            </if>
+        </where>
+        limit 0,1
+    </select>
+
+    <select id="getInfoByTeacher" resultType="Map">
+        select
+        t.user_id as userId,
+        t.user_name as userName,
+        t.sex,
+        t.id_card as idCard,
+        t.mobile,
+        t.email,
+        t.dept_id as deptId,
+        t.origin_place as originPlace,
+        c.card_id as cardId,
+        c.img_path as imgPath,
+        d.name as deptName,
+        c.status as cardStatus
+        from
+        tb_teacher t
+        left join
+        gate_card c on t.user_id = c.user_id
+        left join
+        tb_dept d on d.id = t.dept_id
+        <where>
+            <if test='userId != null and userId != ""'>
+                and t.user_id = #{userId}
+            </if>
+            <if test='cardId != null and cardId != ""'>
+                and c.card_id = #{cardId}
+            </if>
+        </where>
+        limit 0,1
+    </select>
+
+    <select id="getUserInfoListByStudent" resultType="Map">
+        select
+        s.user_id as userId,
+        s.user_name as userName,
+        s.sex,
+        s.id_card as idCard,
+        s.mobile,
+        s.college as deptId,
+        d.name as deptName,
+        s.origin_place as originPlace,
+        c.card_id as cardId,
+        c.img_path as imgPath,
+        c.status as cardStatus
+        from
+        tb_student s
+        left join
+        gate_card c on s.user_id = c.user_id
+        left join
+        tb_dept d on d.id = s.college
+        <where>
+            <if test='userId != null and userId != ""'>
+                and s.user_id = #{userId}
+            </if>
+            <if test='userName != null and userName != ""'>
+                and s.user_name like '%${userName}%'
+            </if>
+            <if test='mobile != null and mobile != ""'>
+                and s.mobile = #{mobile}
+            </if>
+            <if test='deptIds != null'>
+                <foreach collection="deptIds" item="deptId" separator="or" open="and (" close=")">
+                    <if test='deptId != null and deptId != ""'>
+                        s.college = #{deptId} or s.major = #{deptId}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getUserInfoListByTeacher" resultType="Map">
+        select
+        t.user_id as userId,
+        t.user_name as userName,
+        t.sex,
+        t.id_card as idCard,
+        t.mobile,
+        t.dept_id as deptId,
+        t.origin_place as originPlace,
+        c.card_id as cardId,
+        c.img_path as imgPath,
+        d.name as deptName,
+        c.status as cardStatus
+        from
+        tb_teacher t
+        left join
+        gate_card c on t.user_id = c.user_id
+        left join
+        tb_dept d on d.id = t.dept_id
+        <where>
+            <if test='userId != null and userId != ""'>
+                and t.user_id = #{userId}
+            </if>
+            <if test='userName != null and userName != ""'>
+                and t.user_name like '%${userName}%'
+            </if>
+            <if test='mobile != null and mobile != ""'>
+                and t.mobile = #{mobile}
+            </if>
+            <if test='deptIds != null'>
+                <foreach collection="deptIds" item="deptId" separator="or" open="and (" close=")">
+                    <if test='deptId != null and deptId != ""'>
+                        t.dept_id = #{deptId}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getUserInfoListByTeachers" resultType="Map">
+        select
+        t.user_id as userId,
+        t.user_name as userName,
+        t.sex,
+        t.id_card as idCard,
+        t.mobile,
+        t.dept_id as deptId,
+        t.origin_place as originPlace,
+        c.card_id as cardId,
+        c.img_path as imgPath,
+        d.name as deptName,
+        c.status as cardStatus
+        from
+        tb_teacher t
+        left join
+        gate_card c on t.user_id = c.user_id
+        left join
+        tb_dept d on d.id = t.dept_id
+        <where>
+            <if test='userId != null and userId != ""'>
+                and t.user_id = #{userId}
+            </if>
+            <if test='userName != null and userName != ""'>
+                and t.user_name like '%${userName}%'
+            </if>
+            <if test='mobile != null and mobile != ""'>
+                and t.mobile = #{mobile}
+            </if>
+            <if test='deptId != null and deptId != ""'>
+                and t.dept_id = #{deptId}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getUserInfoListByTeacherCount" resultType="java.lang.Integer">
+        select
+        count(*)
+        from
+        tb_teacher t
+        left join
+        gate_card c on t.user_id = c.user_id
+        left join
+        tb_dept d on d.id = t.dept_id
+        <where>
+            <if test='userId != null and userId != ""'>
+                and t.user_id = #{userId}
+            </if>
+            <if test='userName != null and userName != ""'>
+                and t.user_name like '%${userName}%'
+            </if>
+            <if test='mobile != null and mobile != ""'>
+                and t.mobile = #{mobile}
+            </if>
+            <if test='deptId != null and deptId != ""'>
+                and t.dept_id = #{deptId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

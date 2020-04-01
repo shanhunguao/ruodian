@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.EmployeeMapper">
+
+
+    <resultMap id="getClass" type="com.ncu.springboot.biz.entity.Employee">
+        <id column="id" property="id"></id>
+        <result column="employee_id" property="employeeId"></result>
+        <result column="employee_name" property="employeeName"></result>
+        <result column="sex" property="sex"></result>
+        <result column="mobile" property="mobile"></result>
+        <result column="email" property="email"></result>
+        <result column="dept_id" property="deptId"></result>
+        <result column="dept_name" property="deptName"></result>
+        <result column="posts_id" property="postsId"></result>
+        <result column="post_name" property="postName"></result>
+    </resultMap>
+
+    <select id="employeeList" resultType="com.ncu.springboot.biz.entity.Employee">
+        select * FROM tb_employee a
+        <where>
+            <if test="entity.id != null and entity.id != ''">
+                AND a.id = #{entity.id}
+            </if>
+            <if test="entity.employeeId != null and entity.employeeId != ''">
+                AND a.employee_id = #{entity.employeeId}
+            </if>
+            <if test="entity.employeeName != null and entity.employeeName != ''">
+                AND a.employee_name = #{entity.employeeName}
+            </if>
+            <if test="entity.sex != null and entity.sex != ''">
+                AND a.sex = #{entity.sex}
+            </if>
+            <if test="entity.mobile != null and entity.mobile != ''">
+                AND a.mobile = #{entity.mobile}
+            </if>
+        </where>
+        ORDER BY a.update_time DESC
+    </select>
+
+    <select id="getDataById" resultMap="getClass">
+SELECT m.*,b.id AS dept_id,b.name AS dept_name,n.id AS posts_id,n.`post_name`
+FROM tb_dept_association a LEFT JOIN tb_dept b ON a.`dept_id`=b.`id`
+LEFT JOIN tb_posts n ON a.`posts_id`=n.`id` LEFT JOIN tb_employee m ON a.`employee_id`=m.`id`
+WHERE m.`id`=#{id}
+	</select>
+
+    <select id="employeeDetil" resultMap="getClass">
+		select * from tb_employee where dept_id = #{deptId}
+	</select>
+
+    <select id="findId" resultMap="getClass">
+	select * from tb_employee where EMPLOYEE_ID=#{employeeId}
+	</select>
+
+    <select id="findDept" resultType="com.ncu.springboot.biz.entity.Employee">
+SELECT m.*,b.id AS dept_id,b.name AS dept_name,n.id AS posts_id,n.`post_name`
+FROM tb_dept_association a LEFT JOIN tb_dept b ON a.`dept_id`=b.`id`
+LEFT JOIN tb_posts n ON a.`posts_id`=n.`id` LEFT JOIN tb_employee m ON a.`employee_id`=m.`id`
+WHERE b.`id`=#{deptId}
+	</select>
+
+    <select id="findDeptCount" resultType="java.lang.Integer">
+SELECT count(*)
+FROM tb_dept_association a LEFT JOIN tb_dept b ON a.`dept_id`=b.`id`
+LEFT JOIN tb_posts n ON a.`posts_id`=n.`id` LEFT JOIN tb_employee m ON a.`employee_id`=m.`id`
+WHERE b.`id`=#{deptId}
+	</select>
+
+    <select id="find" resultType="com.ncu.springboot.biz.entity.UserInfos">
+        SELECT a.`user_code`,b.*,m.`id` AS deptId,m.`name` AS deptName,n.`post_id`,n.`post_name` FROM tb_user a LEFT
+        JOIN tb_employee b ON a.`employee_id`=b.`employee_id`
+        LEFT JOIN tb_dept_association c ON b.`id`=c.`employee_id`
+        LEFT JOIN tb_posts n ON c.`posts_id`=n.`id` LEFT JOIN tb_dept m ON c.`dept_id`=m.`id`
+        <where>
+            <if test="entity.userCode != null and entity.userCode != ''">
+                AND a.user_code = #{entity.userCode}
+            </if>
+            <if test="entity.employeeId != null and entity.employeeId != ''">
+                AND b.`employee_id`=#{entity.employeeId}
+            </if>
+            <if test="entity.employeeName != null and entity.employeeName != ''">
+                AND b.`employee_name`=#{entity.employeeName}
+            </if>
+            <if test="entity.mobile != null and entity.mobile != ''">
+                AND b.`mobile`=#{entity.mobile}
+            </if>
+            <if test="entity.email != null and entity.email != ''">
+                AND b.email = #{entity.email}
+            </if>
+            <if test="entity.deptId != null and entity.deptId != ''">
+                AND m.id=#{entity.deptId}
+            </if>
+            <if test="entity.deptName != null and entity.deptName != ''">
+                AND m.name=#{entity.deptName}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateLelaition">
+        UPDATE tb_dept_association
+        <set>
+            <if test="entity.deptId != null and entity.deptId != ''">dept_id = #{entity.deptId},</if>
+            <if test="entity.postsId != null and entity.postsId != ''">posts_id = #{entity.postsId},</if>
+        </set>
+        WHERE EMPLOYEE_ID=#{entity.id}
+    </update>
+
+    <insert id="addLelaition">
+        INSERT INTO tb_dept_association(dept_id,posts_id,employee_id) VALUES(#{entity.deptId},#{entity.postsId},#{entity.id})
+    </insert>
+
+    <delete id="delLelaition">
+        DELETE FROM tb_dept_association WHERE EMPLOYEE_ID=#{id}
+    </delete>
+
+    <delete id="delDeptLelaition">
+        DELETE FROM tb_dept_association where dept_id=#{deptId}
+    </delete>
+
+    <insert id="addEmployee">
+        INSERT INTO tb_employee(employee_id,employee_name,email,sex,mobile)
+         VALUES(#{entity.employeeId},#{entity.employeeName},#{entity.email},#{entity.sex},#{entity.mobile})
+    </insert>
+
+    <update id="updateEmployee">
+        UPDATE tb_employee
+        <set>
+            <if test="entity.employeeId != null and entity.employeeId != ''">employee_id = #{entity.employeeId},</if>
+            <if test="entity.employeeName != null and entity.employeeName != ''">employee_name = #{entity.employeeName},</if>
+            <if test="entity.email != null and entity.email!= ''">email = #{entity.email},</if>
+            <if test="entity.sex != null and entity.sex!= ''">sex = #{entity.sex},</if>
+            <if test="entity.mobile != null and entity.mobile != ''">mobile = #{entity.mobile},</if>
+        </set>
+        WHERE id=#{entity.id}
+    </update>
+
+
+
+
+
+</mapper>

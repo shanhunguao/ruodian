@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.UserMapper">
+
+    <resultMap type="com.ncu.springboot.biz.entity.Consumer" id="getClassesMap">
+        <id column="id" property="id"/>
+        <result column="user_code" property="userCode"/>
+        <result column="avatar" property="avatar"/>
+        <result column="user_state" property="userState"/>
+        <result column="user_type" property="userType"/>
+        <result column="wx_open_id" property="wxOpenId"/>
+        <result column="qq_open_id" property="qqOpenId"/>
+        <collection property="employee" ofType="com.ncu.springboot.biz.entity.Employee">
+            <id column="id" property="id"/>
+            <result column="employee_id" property="employeeId"/>
+            <result column="employee_name" property="employeeName"/>
+            <result column="sex" property="sex"/>
+            <result column="mobile" property="mobile"/>
+            <result column="email" property="email"/>
+        </collection>
+    </resultMap>
+
+    <resultMap type="com.ncu.springboot.biz.entity.User" id="users">
+        <id column="id" property="id"/>
+        <result column="user_code" property="usercode"/>
+        <result column="avatar" property="avatar"/>
+        <result column="email" property="email"/>
+        <result column="mobile" property="mobile"/>
+        <result column="id_card" property="idCard"/>
+        <result column="user_state" property="userState"/>
+        <collection property="roles" ofType="com.ncu.springboot.biz.entity.Role">
+            <id column="rid" property="id"/>
+            <result column="role_id" property="roleId"/>
+            <result column="role_name" property="roleName"/>
+        </collection>
+        <collection property="employee" ofType="com.ncu.springboot.biz.entity.Employee">
+            <id column="sid" property="id"/>
+            <result column="employee_id" property="employeeId"/>
+            <result column="employee_name" property="employeeName"/>
+        </collection>
+    </resultMap>
+
+    <resultMap type="com.ncu.springboot.biz.entity.Teacher" id="teacher">
+        <id column="id" property="id"/>
+        <result column="user_code" property="userCode"/>
+        <result column="avatar" property="avatar"/>
+        <result column="card_id" property="cardId"/>
+        <result column="cardStatus" property="cardStatus"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="user_type" property="userType"/>
+        <result column="sex" property="sex"/>
+        <result column="id_card" property="idCard"/>
+        <result column="mobile" property="mobile"/>
+        <result column="email" property="email"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="deptName" property="deptName"/>
+        <result column="origin_place" property="originPlace"/>
+        <collection property="role" ofType="com.ncu.springboot.biz.entity.Role">
+            <id column="rid" property="id"/>
+            <result column="role_id" property="roleId"/>
+            <result column="role_name" property="roleName"/>
+        </collection>
+    </resultMap>
+
+    <resultMap type="com.ncu.springboot.biz.entity.Student" id="Student">
+        <id column="id" property="id"/>
+        <result column="user_code" property="userCode"/>
+        <result column="avatar" property="avatar"/>
+        <result column="card_id" property="cardId"/>
+        <result column="cardStatus" property="cardStatus"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="user_type" property="userType"/>
+        <result column="sex" property="sex"/>
+        <result column="id_card" property="idCard"/>
+        <result column="mobile" property="mobile"/>
+        <result column="campus" property="campus"/>
+        <result column="college" property="college"/>
+        <result column="major" property="major"/>
+        <result column="grade" property="grade"/>
+        <result column="class" property="aclass"/>
+        <result column="collegeName" property="collegeName"/>
+        <result column="majorName" property="majorName"/>
+        <result column="className" property="className"/>
+        <result column="origin_place" property="originPlace"/>
+        <collection property="role" ofType="com.ncu.springboot.biz.entity.Role">
+            <id column="rid" property="id"/>
+            <result column="role_id" property="roleId"/>
+            <result column="role_name" property="roleName"/>
+        </collection>
+    </resultMap>
+
+    <resultMap type="com.ncu.springboot.biz.entity.Temporary" id="Temporary">
+        <id column="id" property="id"/>
+        <result column="user_code" property="userCode"/>
+        <result column="avatar" property="avatar"/>
+        <result column="card_id" property="cardId"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="sex" property="sex"/>
+        <result column="id_card" property="idCard"/>
+        <result column="mobile" property="mobile"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="dept_name" property="deptName"/>
+        <result column="create_persion" property="createPersion"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <sql id="userColumns">
+		a.`id` AS "id",
+		a.`user_code` AS "userCode",
+		a.`password` AS "password",
+		a.`mobile` AS "mobile",
+		a.`email` AS "email",
+		a.`avatar` AS "avatar",
+		a.`id_card` AS "idCard",
+		a.`employee_id` AS "employeeId",
+		a.`user_state` AS "userState",
+		a.`update_time` AS "updateTime",
+		a.`wx_open_id` AS "wxOpenId",
+		a.`qq_open_id` AS "qqOpenId"
+	</sql>
+
+
+    <select id="getDataById" resultMap="users">
+SELECT
+  n.id,
+  n.user_code,
+  n.mobile,
+  n.avatar,
+  n.email,
+  n.id_card,
+  n.user_state,
+  a.`id` rid,
+  a.role_id,
+  a.role_name,
+  b.id sid,
+  b.employee_id,
+  b.employee_name,
+  n.update_time
+FROM
+  tb_user n
+  LEFT JOIN tb_user_role m
+    ON n.id = m.`user_id`
+    LEFT JOIN tb_role a
+    on m.`role_id`=a.`role_id`
+  LEFT JOIN tb_employee b
+    ON n.`employee_id` = b.employee_id
+WHERE n.id =#{id}
+	</select>
+
+
+    <select id="userList" resultType="com.ncu.springboot.biz.entity.User">
+        select
+        <include refid="userColumns"/>
+        FROM tb_user a
+        <where>
+            <if test="entity.userCode != null and entity.userCode != ''">
+                AND a.user_code like CONCAT('%', #{entity.userCode} ,'%')
+            </if>
+            <if test="entity.mobile != null and entity.mobile != ''">
+                AND a.mobile like CONCAT('%', #{entity.mobile} ,'%')
+            </if>
+            <if test="entity.idCard != null and entity.idCard != ''">
+                AND a.id_card like CONCAT('%', #{entity.idCard} ,'%')
+            </if>
+        </where>
+        ORDER BY a.update_time DESC
+    </select>
+
+
+    <delete id="remove">
+		DELETE FROM tb_user where id = #{id}
+	</delete>
+
+    <update id="updateUserState">
+		UPDATE tb_user SET user_state = #{state}
+		WHERE id = #{id}
+	</update>
+
+    <update id="updatePassword">
+		UPDATE tb_user SET password = #{password}
+		WHERE id = #{id}
+	</update>
+
+
+    <select id="findDeptId" resultType="java.lang.String">
+	SELECT t.dept_id FROM (SELECT u.user_code,e.dept_id FROM tb_user u LEFT JOIN tb_employee e ON u.employee_id=e.employee_id LEFT JOIN tb_dept d ON e.dept_id=d.id) t WHERE t.user_code=#{userCode}
+	</select>
+
+    <select id="findUser" resultType="com.ncu.springboot.biz.entity.User">
+		select * FROM tb_user where user_code=#{userCode}
+	</select>
+
+    <select id="findConsumer" resultMap="getClassesMap">
+		SELECT * FROM tb_user u,tb_employee e WHERE u.`employee_id`=e.`employee_id` AND u.`user_code`=#{userCode}
+	</select>
+
+    <select id="findTeacher" resultMap="teacher">
+SELECT
+  b.id,
+  a.user_code,
+  a.avatar,
+  a.role_id,
+  a.user_type,
+  m.card_id,
+  m.status as cardStatus,
+  b.user_id,
+  b.user_name,
+  b.sex,
+  b.id_card,
+  b.mobile,
+  b.email,
+  b.dept_id,
+  dept.name as deptName,
+  b.origin_place,
+  r.`id` rid,
+  r.`role_id`,
+  r.`role_name`
+FROM
+  tb_user a
+  LEFT JOIN tb_teacher b
+    ON a.employee_id = b.user_id
+  LEFT JOIN tb_dept dept
+    ON dept.id = b.dept_id
+  left join tb_role r
+    on a.`role_id` = r.`role_id`
+  LEFT JOIN gate_card m
+    ON b.user_id = m.user_id
+WHERE a.user_code = #{userCode}
+    </select>
+
+    <select id="findStudent" resultMap="Student">
+SELECT
+  a.user_code,
+  a.avatar,
+  a.role_id,
+  a.user_type,
+  m.card_id,
+  m.status as cardStatus,
+  b.*,
+  dept.name as collegeName,
+  major.major_name as majorName,
+  class.class_name as className,
+  r.`id` rid,
+  r.`role_id`,
+  r.`role_name`
+FROM
+  tb_user a
+  left join tb_role r
+    on a.`role_id` = r.`role_id`
+  LEFT JOIN tb_student b
+    ON a.employee_id = b.user_id
+  LEFT JOIN tb_dept dept
+    ON dept.id = b.college
+  LEFT JOIN t_major major
+    ON major.major_id = b.major
+  LEFT JOIN t_class class
+    ON class.class_id = b.class
+  LEFT JOIN gate_card m
+    ON b.user_id = m.user_id
+WHERE a.user_code = #{userCode}
+    </select>
+
+
+    <select id="findTemporary" resultMap="Temporary">
+select
+  a.user_code,
+  a.avatar,
+  a.`role_id`,
+  b.*,
+  n.`card_id`,
+  m.`dept_name`
+from
+  tb_user a
+  left join gate_temp_persion b
+    on a.user_code = b.`user_id`
+  left join gate_card n
+    on b.`user_id` = n.`user_id`
+  left join department m
+    on m.`dept_id` = b.`dept_id`
+where b.`user_id` = #{userCode}
+    </select>
+
+    <select id="checkOpenId" resultType="com.ncu.springboot.biz.entity.User">
+        select * from tb_user
+        <where>
+            <if test="WXopenId !=null and WXopenId !='' ">
+                and wx_open_id=#{WXopenId}
+            </if>
+            <if test="QQopenId !=null and QQopenId !='' ">
+                and qq_open_id=#{QQopenId}
+            </if>
+        </where>
+
+    </select>
+
+    <update id="binding">
+        UPDATE tb_user SET
+        <if test="WXopenId !=null and WXopenId !='' ">
+            wx_open_id=#{WXopenId}
+        </if>
+        <if test="QQopenId !=null and QQopenId !='' ">
+            qq_open_id=#{QQopenId}
+        </if>
+        WHERE id=#{id}
+    </update>
+
+
+    <update id="unbindingWx">
+UPDATE tb_user SET wx_open_id=NULL WHERE id=#{id}
+	</update>
+
+    <update id="unbindingQQ">
+	UPDATE tb_user SET qq_open_id=NULL WHERE id=#{id}
+</update>
+
+    <select id="findIds" resultType="java.lang.Integer">
+        select id from tb_user where user_code in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item.usercode,jdbcType=VARCHAR}
+        </foreach>
+
+    </select>
+
+    <insert id="bindingRole">
+insert into tb_user_role(user_id,role_id) values(#{userId},#{roleId})
+</insert>
+
+    <select id="checkUserCode" resultType="com.ncu.springboot.biz.entity.User">
+	SELECT * FROM tb_user WHERE user_code=#{userCode}
+</select>
+
+    <select id="findUserCode" resultType="java.lang.String">
+	SELECT user_code FROM tb_user WHERE id=#{id}
+</select>
+
+    <select id="getUserCodeByUnionId" resultType="java.lang.String">
+		SELECT user_id FROM tb_account_wechat WHERE wechat_unionid=#{union_id} 
+	</select>
+
+    <delete id="delRole">
+	delete from tb_user_role where user_id=#{userId}
+</delete>
+
+    <insert id="addRole">
+insert into tb_user_role(user_id,role_id) values(#{userId},#{roleId})
+    </insert>
+
+    <update id="updateRoleId">
+	update tb_user_role set role_id=#{roleId} where user_code=#{userCode}
+</update>
+
+    <select id="findId" resultType="com.ncu.springboot.biz.entity.User">
+        select * from tb_user where id=#{id}
+    </select>
+
+    <select id="selectId" resultType="com.ncu.springboot.biz.entity.User">
+        select * from tb_user where user_code=#{userCode}
+    </select>
+
+    <update id="updateLog">
+UPDATE gate_log SET ip=#{ip} WHERE user_id=#{userId}
+    </update>
+
+    <select id="findDeptIds" resultType="java.lang.String">
+SELECT dept_id FROM `tb_manage_dept` where user_id=#{userCode}
+    </select>
+
+</mapper>

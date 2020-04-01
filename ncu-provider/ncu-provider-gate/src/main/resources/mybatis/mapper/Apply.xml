@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.ApplyMapper">
+	<select id="queryListByRole" resultType="Map">
+		select
+			a.id,
+			a.user_id as userId,
+			a.card_id as cardId,
+			a.create_time as createTime,
+			a.update_time as updateTime,
+			a.start_time as startTime,
+			a.end_time as endTime,
+			a.status,
+			a.remark,
+			a.check_remark as checkReark,
+			a.check_persion as checkPersion,
+			a.check_time as checkTime,
+			a.campus_id as campusId,
+			c.campus_name as campusName,
+			a.file_path as filePath,
+			IFNULL(t.user_name,s.user_name) as userName,
+			IFNULL(t.mobile,s.mobile) as userMobile,
+			dept.name as deptName,
+			cpt.user_name as checkPersionName,
+			cpt.mobile as checkPersionMobile
+		from
+			gate_apply a
+		left join 
+			tb_teacher t on a.user_id = t.user_id
+		left join
+			tb_student s on s.user_id = a.user_Id
+		left join
+			tb_campus c on c.campus_id = a.campus_id
+		left join
+			tb_dept dept on (t.dept_id = dept.id or s.college = dept.id)
+		left join
+			tb_teacher cpt on cpt.user_id = a.check_persion
+		<where>
+			<if test='deptIds != null'>
+				<foreach collection="deptIds" item="deptId" separator="or" open="and (" close=")">
+					<if test='deptId != null and deptId != ""'>
+						t.dept_id = #{deptId} or s.college = #{deptId} or s.major = #{deptId}
+					</if>
+				</foreach>
+			</if>
+			<if test='userIds != null'>
+				<foreach collection="userIds" item="userId" separator="or" open="and (" close=")">
+					<if test='userId != null and userId != ""'>
+						a.user_id = #{userId}
+					</if>
+				</foreach>
+			</if>
+			<if test='checkPersion != null and checkPersion != ""'>
+				and a.check_persion = #{checkPersion}
+			</if>
+			<if test='status != null and status != ""'>
+				and a.status = #{status}
+			</if>
+			<if test='startTime != null and startTime != ""'>
+				and a.start_time >= #{startTime}
+			</if>
+			<if test='endTime != null and endTime != ""'>
+				and <![CDATA[a.end_time <= #{endTime}]]>
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="getTotalByRole" resultType="Map">
+		select
+			count(a.id) as count
+		from
+			gate_apply a
+		left join 
+			tb_teacher t on a.user_id = t.user_id
+		left join
+			tb_student s on s.user_id = a.user_Id
+		<where>
+			<if test='deptIds != null'>
+				<foreach collection="deptIds" item="deptId" separator="or" open="and (" close=")">
+					<if test='deptId != null and deptId != ""'>
+						t.dept_id = #{deptId} or s.college = #{deptId} or s.major = #{deptId}
+					</if>
+				</foreach>
+			</if>
+			<if test='userIds != null'>
+				<foreach collection="userIds" item="userId" separator="or" open="and (" close=")">
+					<if test='userId != null and userId != ""'>
+						a.user_id = #{userId}
+					</if>
+				</foreach>
+			</if>
+			<if test='checkPersion != null and checkPersion != ""'>
+				and a.check_persion = #{checkPersion}
+			</if>
+			<if test='status != null and status != ""'>
+				and a.status = #{status}
+			</if>
+			<if test='startTime != null and startTime != ""'>
+				and a.start_time >= #{startTime}
+			</if>
+			<if test='endTime != null and endTime != ""'>
+				and <![CDATA[a.end_time <= #{endTime}]]>
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select
+			a.id,
+			a.user_id as userId,
+			a.card_id as cardId,
+			a.create_time as createTime,
+			a.update_time as updateTime,
+			a.start_time as startTime,
+			a.end_time as endTime,
+			a.status,
+			a.remark,
+			a.check_remark as checkRemark,
+			a.check_persion as checkPersion,
+			a.check_time as checkTime,
+			a.campus_id as campusId,
+			c.campus_name as campusName,
+			a.file_path as filePath,
+			cpt.user_name as checkPersionName,
+			cpt.mobile as checkPersionMobile
+		from
+			gate_apply a
+		left join
+			tb_campus c on c.campus_id = a.campus_id
+		left join
+			tb_teacher cpt on cpt.user_id = a.check_persion
+		<where>
+			<if test='userId != null and userId != ""'>
+				and a.user_id = #{userId}
+			</if>
+			<if test='isCheck == 2'>
+				and a.status = '0'
+			</if>
+			<if test='isCheck == 1'>
+				and a.status in ('1','2','3','4','5')
+				and a.end_time >= curdate()
+			</if>
+			<if test='isCheck == null'>
+				and curdate() between date(a.start_time) and date(a.end_time)
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="getCheckPersion" resultType="Map">
+		SELECT 
+			IFNULL(tp.user_name,sp.user_name) as checkPermissionName,
+			IFNULL(tp.mobile,sp.mobile) as checkPersionMobile
+		from 
+			tb_user u
+		LEFT JOIN
+			tb_student s on s.user_id = u.user_code
+		LEFT JOIN
+			tb_teacher t on t.user_id = u.user_code
+		LEFT JOIN
+			gate_permission p on p.object_id = IFNULL(s.class,s.major) or p.object_id = t.dept_id
+		LEFT JOIN
+			tb_student sp on sp.user_id = p.user_id
+		LEFT JOIN
+			tb_teacher tp on tp.user_id = p.user_id
+		WHERE
+			u.user_code = #{userId}
+		limit 0,1
+	</select>
+	
+	<select id="getTotal" resultType="Map">
+		select
+			a.count(1) as count
+		from
+			gate_apply a
+		left join
+			tb_campus c on c.campus_id = a.campus_id
+		<where>
+			<if test='userId != null and userId != ""'>
+				and a.user_id = #{userId}
+			</if>
+			<if test='isCheck == 2'>
+				and a.status = '0'
+			</if>
+			<if test='isCheck == 1'>
+				and a.status in ('1','2','3','4','5')
+				and a.end_time >= curdate()
+			</if>
+			<if test='isCheck == null'>
+				and curdate() between date(a.start_time) and date(a.end_time)
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="query" resultType="Map">
+		select
+			a.id,
+			a.user_id as userId,
+			a.card_id as cardId,
+			a.create_time as createTime,
+			a.update_time as updateTime,
+			a.start_time as startTime,
+			a.end_time as endTime,
+			a.status,
+			a.remark,
+			a.check_remark as checkRemark,
+			a.check_persion as checkPersion,
+			a.check_time as checkTime,
+			a.campus_id as campusId,
+			c.campus_name as campusName,
+			a.file_path as filePath,
+			IFNULL(t.user_name,s.user_name) as userName
+		from
+			gate_apply a
+		left join
+			tb_campus c on c.campus_id = a.campus_id
+		left join
+			tb_teacher t on t.user_id = a.user_id
+		left join
+			tb_student s on s.user_id = a.user_id
+		where
+			a.id = #{id}
+		limit 0,1
+	</select>
+	
+	<select id="getDeptByUserId" resultType="Map">
+		select 
+			t.user_id as userId,
+			t.dept_id as deptId
+		from 
+			tb_teacher t
+		<where>
+			<foreach collection="list" item="userId"
+				separator="or" open="and (" close=")">
+				<if test='userId != null and userId != ""'>
+					t.user_id = #{userId}
+				</if>
+			</foreach>
+		</where>
+		union
+		select 
+			s.user_id as userId,
+			s.major as deptId
+		from 
+			tb_student s
+		<where>
+		<foreach collection="list" item="userId"
+				separator="or" open="and (" close=")">
+				<if test='userId != null and userId != ""'>
+					s.user_id = #{userId}
+				</if>
+			</foreach>
+		</where>
+	</select>
+	
+	<update id="check" >
+		update
+			gate_apply
+			<set>
+				<if test='userId != null and userId != ""'>
+					check_persion = #{userId},
+				</if>
+				<if test='status != null and status != ""'>
+					status = #{status},
+				</if>
+				<if test='remark != null and remark != ""'>
+					check_remark  = #{remark},
+				</if>
+					check_time = now(),
+			</set>
+			where id in 
+			
+				<if test='ids != null and ids.size() > 0'>
+					<foreach collection="ids" item="id" separator="," open="(" close=")">
+            			#{id}
+        			</foreach>
+				</if>
+	</update>
+	
+	<select id="isSafe" resultType="Integer">
+		select
+			count(1)
+		from
+			gate_yqcx
+		where
+			`工资号` = #{userId}
+	</select>
+	
+	<select id="isSafeByMobile" resultType="Integer">
+		select
+			count(1)
+		from
+			gate_yqcx
+		where
+			`联系手机` = #{userId}
+	</select>
+</mapper>

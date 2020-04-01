@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.MessageDeptNumberMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select
+			count(d.id)
+		from
+			tb_dept d
+		left join
+			tb_message_dept_number mdn on mdn.dept_id = d.id
+		<where>
+			<if test='deptId != null and deptId != ""'>
+				and d.id = #{deptId}
+			</if>
+			<if test='deptName != null and deptName != ""'>
+				and d.name like '%#{deptName}%'
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="Map">
+		select
+			mdn.id as id,
+			IFNULL(mdn.dept_id,d.id) as deptId,
+			IFNULL(mdn.sent_number,0) as sentNumber,
+			IFNULL(mdn.sum_number,0) as sumNumber,
+			mdn.create_time as createTime,
+			mdn.create_persion_id as createPersionId,
+			mdn.update_time as updateTime,
+			mdn.update_persion_id as updatePersionId
+		from
+			tb_dept d
+		left join
+			tb_message_dept_number mdn on mdn.dept_id = d.id
+		<where>
+			<if test='deptId != null and deptId != ""'>
+				and d.id = #{deptId}
+			</if>
+			<if test='deptName != null and deptName != ""'>
+				and d.name like '%#{deptName}%'
+			</if>
+		</where>
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+			limit #{num},#{size}
+		</if>
+	</select>
+
+	<update id="addNumber">
+		update tb_message_dept_number set sent_number = sent_number+#{number} where id = #{id}
+	</update>
+
+</mapper>

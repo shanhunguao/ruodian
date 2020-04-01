@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.DeviceMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(d.DEVICE_ID) 
+		from tb_device d
+		left join tb_cabinet c on c.CABINET_ID = d.CABINET_ID
+		left join tb_equipment_room e on c.ROOM_ID = e.ROOM_ID
+		left join tb_building b on b.BUILDING_ID = e.BUILDING_ID
+		<where>
+			<if test="deviceCode != null and deviceCode != ''">
+				and d.DEVICE_CODE = #{deviceCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="cabinetId != null and cabinetId != ''">
+				and c.CABINET_ID = #{cabinetId}
+			</if>
+			<if test="deviceName != null and deviceName != ''">
+				and d.DEVICE_NAME like '%${deviceName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and d.status = #{status}
+			</if>
+			<if test="deviceType != null and deviceType != ''">
+				and d.DEVICE_TYPE = #{deviceType}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and b.BUILDING_ID = #{buildingId}
+			</if>
+			<if test="roomId != null and roomId != ''">
+				and e.ROOM_ID = #{roomId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="java.util.Map">
+		select 
+			d.DEVICE_ID as deviceId,
+			d.DEVICE_NAME as deviceName,
+			d.DEVICE_TYPE as deviceType,
+			d.DEVICE_CODE as deviceCode,
+			d.STATUS as status,
+			cp.CAMPUS_NAME as capmusName,
+			d.CREATE_TIME as createTime
+		from tb_device d
+		left join tb_cabinet c on c.CABINET_ID = d.CABINET_ID
+		left join tb_equipment_room e on c.ROOM_ID = e.ROOM_ID
+		left join tb_building b on b.BUILDING_ID = e.BUILDING_ID
+		left join tb_campus cp on b.CAMPUS_ID = cp.CAMPUS_ID
+		<where>
+			<if test="deviceCode != null and deviceCode != ''">
+				and d.DEVICE_CODE = #{deviceCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="cabinetId != null and cabinetId != ''">
+				and c.CABINET_ID = #{cabinetId}
+			</if>
+			<if test="deviceName != null and deviceName != ''">
+				and d.DEVICE_NAME like '%${deviceName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and d.status = #{status}
+			</if>
+			<if test="deviceType != null and deviceType != ''">
+				and d.DEVICE_TYPE = #{deviceType}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and b.BUILDING_ID = #{buildingId}
+			</if>
+			<if test="roomId != null and roomId != ''">
+				and e.ROOM_ID = #{roomId}
+			</if>
+		</where>
+		ORDER BY d.CREATE_TIME DESC
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		 limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="export" resultType="java.util.Map">
+		SELECT
+			IFNULL(d.DEVICE_CODE ,'') as DEVICE_CODE,
+			IFNULL(d.DEVICE_NAME ,'') as DEVICE_NAME,
+			IFNULL(d.PUT_RACK ,'') as PUT_RACK,
+			IFNULL(d.CREATE_TIME ,'') as CREATE_TIME,
+			IFNULL(s.`OPTION` ,'') as STATUS,
+			IFNULL(d.REMARK ,'') as REMARK,
+			IFNULL(d.DEVICE_MODEL ,'') as DEVICE_MODEL,
+			IFNULL(d.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(d.AREA ,'') as AREA,
+			IFNULL(d.FUNCTION ,'') as FUNCTION,
+			IFNULL(d.SERIES ,'') as SERIES,
+			IFNULL(d.PROPERTY_SERIES ,'') as PROPERTY_SERIES,
+			IFNULL(t.`OPTION` ,'') as DEVICE_TYPE,
+			IFNULL(d.POWER ,'') as POWER,
+			IFNULL(d.RECEIVE ,'') as RECEIVE,
+			IFNULL(d.USER_TIER ,'') as USER_TIER,
+			IFNULL(d.TIER ,'') as TIER,
+			IFNULL(d.HEIGHT ,'') as HEIGHT,
+			IFNULL(d.LENGTH ,'') as LENGTH,
+			IFNULL(d.WIDTH ,'') as WIDTH,
+			IFNULL(d.LAYOUT_TIME ,'') as LAYOUT_TIME,
+			IFNULL(cr.EMPLOYEE_NAME ,'') as CREATE_PERSON_NAME,
+			IFNULL(ud.EMPLOYEE_NAME ,'') as UPDATE_PERSON_NAME,
+			IFNULL(sp.SUPPLIER_NAME ,'') as MANUFACTOR_NAME,
+			IFNULL(c.CABINET_CODE ,'') as CABINET_CODE,
+			IFNULL(m.EMPLOYEE_NAME,'') as MAINTAIN_PERSON_NAME
+		from tb_device d
+		LEFT JOIN view_user_employee cr ON d.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON d.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_employee m on m.employee_id = d.MAINTAIN_PERSON
+		LEFT JOIN tb_supplier sp on sp.id = d.MANUFACTOR
+		LEFT JOIN tb_cabinet c on c.CABINET_ID = d.CABINET_ID
+		LEFT JOIN tb_code	s on s.CODE_ID = d.`STATUS`
+		LEFT JOIN tb_code t on t.CODE_ID = d.DEVICE_TYPE
+		LEFT JOIN tb_equipment_room e on c.ROOM_ID = e.ROOM_ID
+		<where>
+			<if test="deviceCode != null and deviceCode != ''">
+				and d.DEVICE_CODE = #{deviceCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					e.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="cabinetId != null and cabinetId != ''">
+				and c.CABINET_ID = #{cabinetId}
+			</if>
+			<if test="deviceName != null and deviceName != ''">
+				and d.DEVICE_NAME like '%${deviceName}%'
+			</if>
+			<if test="status != null and status != ''">
+				and d.status = #{status}
+			</if>
+			<if test="deviceType != null and deviceType != ''">
+				and d.DEVICE_TYPE = #{deviceType}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and b.BUILDING_ID = #{buildingId}
+			</if>
+			<if test="roomId != null and roomId != ''">
+				and e.ROOM_ID = #{roomId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="java.util.Map">
+		SELECT
+			d.DEVICE_ID as deviceId,
+			d.CABINET_ID as cabinetId,
+			d.DEVICE_NAME as deviceName,
+			d.PUT_RACK as putRack,
+			d.PRINCIPAL as principal,
+			d.MAINTAIN_PERSON as maintainPerson,
+			d.CREATE_PERSON_ID as createPersonId,
+			d.CREATE_TIME as createTime,
+			d.MANAGE_DEPT as manageDept,
+			d.STATUS as status,
+			d.REMARK as remark,
+			d.MANUFACTOR as manufactor,
+			d.DEVICE_MODEL as deviceModel,
+			d.UPDATE_TIME as updateTime,
+			d.AREA as area,
+			d.FUNCTION as function,
+			d.SERIES as series,
+			d.PROPERTY_SERIES as propertySeries,
+			d.DEVICE_TYPE as deviceType,
+			d.POWER as power,
+			d.RECEIVE as receive,
+			d.USER_TIER as userTier,
+			d.TIER as tier,
+			d.HEIGHT as height,
+			d.LENGTH as length,
+			d.WIDTH as width,
+			d.UPDATE_PERSON_ID as updatePersonId,
+			d.DEVICE_CODE as deviceCode,
+			d.LAYOUT_TIME as layoutTime,
+			cr.employee_name as createPersonName,
+			ud.employee_name as updatePersonName,
+			s.supplier_name as manufactorName,
+			c.CABINET_CODE as cabinetCode,
+			m.employee_name
+		from tb_device d
+		LEFT JOIN view_user_employee cr ON d.CREATE_PERSON_ID = cr.EMPLOYEE_ID
+		LEFT JOIN view_user_employee ud ON d.UPDATE_PERSON_ID = ud.EMPLOYEE_ID
+		LEFT JOIN tb_employee m on m.employee_id = d.MAINTAIN_PERSON
+		LEFT JOIN tb_supplier s on s.id = d.MANUFACTOR
+		LEFT JOIN tb_cabinet c on c.CABINET_ID = d.CABINET_ID
+		<where>
+			<if test='deviceId != null and deviceId != ""'>
+				and d.DEVICE_ID = #{deviceId}
+			</if>
+			<if test='deviceCode != null and deviceCode != ""'>
+				and d.DEVICE_CODE = #{deviceCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT
+			DEVICE_ID,
+			DEVICE_CODE
+		FROM
+			tb_device
+		WHERE
+			<foreach collection="deviceCodes" item="deviceCode"
+				separator="or">
+				<if test='deviceCode != null and deviceCode != ""'>
+					DEVICE_CODE = #{deviceCode}
+				</if>
+			</foreach>
+	</select>
+</mapper>

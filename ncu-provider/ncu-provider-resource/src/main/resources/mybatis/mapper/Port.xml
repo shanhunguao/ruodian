@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.PortMapper">
+
+	<select id="getTotal" resultType="Integer">
+		select 
+			count(p.PORT_ID) 
+		from tb_port p
+		left join tb_device d on d.DEVICE_ID = p.DEVICE_ID
+		left join tb_cabinet c on c.CABINET_ID = d.CABINET_ID
+		left join tb_equipment_room e on c.ROOM_ID = e.ROOM_ID
+		left join tb_building b on b.BUILDING_ID = e.BUILDING_ID
+		<where>
+			<if test="portCode != null and portCode != ''">
+				and p.PORT_CODE = #{portCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="portType != null and portType != ''">
+				and p.PORT_TYPE = #{portType}
+			</if>
+			<if test="portName != null and portName != ''">
+				and p.PORT_NAME like '%${portName}%'
+			</if>
+			<if test="deviceId != null and deviceId != ''">
+				and p.DEVICE_ID = #{deviceId}
+			</if>
+			<if test="status != null and status != ''">
+				and p.STATUS = #{status}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and b.BUILDING_ID = #{buildingId}
+			</if>
+			<if test="roomId != null and roomId != ''">
+				and e.ROOM_ID = #{roomId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryList" resultType="java.util.Map">
+		select 
+			p.PORT_ID as portId,
+			p.PORT_NAME as portName,
+			p.PORT_CODE as portCode,
+			p.STATUS as status,
+			p.PORT_TYPE as portType,
+			cp.CAMPUS_NAME as campusName,
+			p.CREATE_TIME as createTime
+		from tb_port p
+		left join tb_device d on d.DEVICE_ID = p.DEVICE_ID
+		left join tb_cabinet c on c.CABINET_ID = d.CABINET_ID
+		left join tb_equipment_room e on c.ROOM_ID = e.ROOM_ID
+		left join tb_building b on b.BUILDING_ID = e.BUILDING_ID
+		left join tb_campus cp on b.CAMPUS_ID = cp.CAMPUS_ID
+		<where>
+			<if test="portCode != null and portCode != ''">
+				and p.PORT_CODE = #{portCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="portType != null and portType != ''">
+				and p.PORT_TYPE = #{portType}
+			</if>
+			<if test="portName != null and portName != ''">
+				and p.PORT_NAME like '%${portName}%'
+			</if>
+			<if test="deviceId != null and deviceId != ''">
+				and p.DEVICE_ID = #{deviceId}
+			</if>
+			<if test="status != null and status != ''">
+				and p.STATUS = #{status}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and b.BUILDING_ID = #{buildingId}
+			</if>
+			<if test="roomId != null and roomId != ''">
+				and e.ROOM_ID = #{roomId}
+			</if>
+		</where>
+		ORDER BY p.CREATE_TIME DESC 
+		<if test='num != null and size != null and num > "-1" and size >"-1"'>
+		limit #{num},#{size}
+		</if>
+	</select>
+	
+	<select id="export" resultType="Map">
+		SELECT
+			IFNULL(p.PORT_CODE ,'') as PORT_CODE,
+			IFNULL(p.PORT_NAME ,'') as PORT_NAME,
+			IFNULL(p.CREATE_TIME ,'') as CREATE_TIME,
+			IFNULL(s.`OPTION` ,'') as STATUS,
+			IFNULL(t.`OPTION` ,'') as PORT_TYPE,
+			IFNULL(p.UPDATE_TIME ,'') as UPDATE_TIME,
+			IFNULL(p.REMARK ,'') as REMARK,
+			IFNULL(ud.employee_name ,'') as UPDATE_PERSON_NAME,
+			IFNULL(d.DEVICE_CODE ,'') as DEVICE_CODE
+		from tb_port p
+		LEFT JOIN view_user_employee ud ON p.UPDATE_PERSON_ID = ud.id
+		LEFT JOIN tb_device d on d.DEVICE_ID = p.DEVICE_ID
+		LEFT JOIN tb_code s on s.CODE_ID = p.`STATUS`
+		LEFT JOIN tb_code t on t.CODE_ID = p.PORT_TYPE
+		left join tb_cabinet c on c.CABINET_ID = d.CABINET_ID
+		left join tb_equipment_room e on c.ROOM_ID = e.ROOM_ID
+		left join tb_building b on b.BUILDING_ID = e.BUILDING_ID
+		<where>
+			<if test="portCode != null and portCode != ''">
+				and p.PORT_CODE = #{portCode}
+			</if>
+			<foreach collection="campusIds" item="campusId" separator="or" open="and (" close=")">
+				<if test='campusId != null and campusId != ""'>
+					b.CAMPUS_ID = #{campusId}
+				</if>
+			</foreach>
+			<if test="portType != null and portType != ''">
+				and p.PORT_TYPE = #{portType}
+			</if>
+			<if test="portName != null and portName != ''">
+				and p.PORT_NAME like '%${portName}%'
+			</if>
+			<if test="deviceId != null and deviceId != ''">
+				and p.DEVICE_ID = #{deviceId}
+			</if>
+			<if test="status != null and status != ''">
+				and p.STATUS = #{status}
+			</if>
+			<if test="buildingId != null and buildingId != ''">
+				and b.BUILDING_ID = #{buildingId}
+			</if>
+			<if test="roomId != null and roomId != ''">
+				and e.ROOM_ID = #{roomId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="query" resultType="java.util.Map">
+		SELECT
+			p.PORT_ID as portId,
+			p.DEVICE_ID as deviceId,
+			p.PORT_NAME as portName,
+			p.CREATE_TIME as createTime,
+			p.STATUS as status,
+			p.PORT_TYPE as portType,
+			p.UPDATE_TIME as updateTime,
+			p.REMARK as remark,
+			p.UPDATE_PERSON_ID as updatePersonId,
+			p.PORT_CODE as portCode,
+			ud.employee_name as updatePersonName,
+			d.DEVICE_CODE as deviceCode
+		from tb_port p
+		LEFT JOIN view_user_employee ud ON p.UPDATE_PERSON_ID = ud.id
+		LEFT JOIN tb_device d on d.DEVICE_ID = p.DEVICE_ID
+		<where>
+			<if test='portId != null and portId != ""'>
+				and p.PORT_ID = #{portId}
+			</if>
+			<if test='portCode != null and portCode != ""'>
+				and p.PORT_CODE = #{portCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectIdByCode" resultType="java.util.Map">
+		SELECT
+			PORT_ID,
+			PORT_CODE
+		FROM
+			tb_port
+		WHERE
+			<foreach collection="portCodes" item="portCode"
+				separator="or">
+				<if test='portCode != null and portCode != ""'>
+					PORT_CODE = #{portCode}
+				</if>
+			</foreach>
+	</select>
+</mapper>

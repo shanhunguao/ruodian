@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.provider.system.dao.ContractMapper">
+
+
+    <select id="find" resultType="com.ncu.springboot.api.system.entity.Contract">
+        SELECT * from tb_contract
+        <where>
+            <if test="contract.contractCode!=null and contract.contractCode!=''">
+                and contract_code=#{contract.contractCode}
+            </if>
+            <if test="contract.contractName!=null and contract.contractName!=''">
+                and contract_name=#{contract.contractName}
+            </if>
+            <if test="contract.contractAmount!=null and contract.contractAmount!=''">
+                and contract_amount=#{contract.contractAmount}
+            </if>
+            <if test="contract.contractParty!=null and contract.contractParty!=''">
+                and contract_party=#{contract.contractParty}
+            </if>
+            <if test="contract.contractClient!=null and contract.contractClient!=''">
+                and contract_client=#{contract.contractClient}
+            </if>
+            <if test="contract.contractStatus!=null and contract.contractStatus!=''">
+                and contract_status=#{contract.contractStatus}
+            </if>
+            <if test="contract.contractTypeid!=null and contract.contractTypeid!=''">
+                and contract_typeid=#{contract.contractTypeid}
+            </if>
+        </where>
+    </select>
+    <select id="total" resultType="java.lang.Integer">
+        select count(*) from tb_contract;
+    </select>
+
+    <select id="findId" resultMap="getClassMap">
+    SELECT
+      n.*,
+      m.`id` as sid,
+      m.product_code,
+      m.product_name,
+      m.total,
+      m.price,
+      m.number,
+      m.contract_code
+    FROM
+      tb_contract n
+      LEFT JOIN tb_contract_details m
+        ON n.contract_code = m.contract_code
+    WHERE n.id = #{id}
+    </select>
+
+    <select id="findIds" resultType="java.lang.Integer">
+    SELECT
+      m.`id`
+    FROM
+      tb_contract n
+      LEFT JOIN tb_contract_details m
+        ON n.contract_code = m.contract_code
+    WHERE n.id = #{id}
+    </select>
+
+    <resultMap id="getClassMap" type="com.ncu.springboot.api.system.entity.Contract">
+        <id column="id" property="id"></id>
+        <result column="contract_name" property="contractName"></result>
+        <result column="project_name" property="projectName"></result>
+        <result column="contract_party" property="contractParty"></result>
+        <result column="contract_client" property="contractClient"></result>
+        <result column="contract_party_address" property="contractPartyAddress"></result>
+        <result column="contract_client_address" property="contractClientAddress"></result>
+        <result column="contract_code" property="contractCode"></result>
+        <result column="project_code" property="projectCode"></result>
+        <result column="contract_amount" property="contractAmount"></result>
+        <result column="payment" property="payment"></result>
+        <result column="contract_status" property="contractStatus"></result>
+        <result column="amount_paid" property="amountPaid"></result>
+        <result column="signing_time" property="signingTime"></result>
+        <result column="ending_time" property="endingTime"></result>
+        <result column="qulity_date" property="qulityDate"></result>
+        <result column="party_message" property="partyMessage"></result>
+        <result column="second_party_message" property="secondPartyMessage"></result>
+        <result column="contract_typeid" property="contractTypeid"></result>
+        <result column="contract_file" property="contractFile"></result>
+        <result column="remark" property="remark"></result>
+        <result column="layout_time" property="layoutTime"></result>
+        <collection property="contractDetails" ofType="com.ncu.springboot.api.system.entity.ContractDetails"
+                    column="id">
+            <!--一对多 两个表之间存在相同id主键，另外一个id需要取别名-->
+            <id column="sid" property="id"></id>
+            <result column="product_code" property="productCode"></result>
+            <result column="product_name" property="productName"></result>
+            <result column="total" property="total"></result>
+            <result column="price" property="price"></result>
+            <result column="number" property="number"></result>
+            <result column="contract_code" property="contractCode"></result>
+        </collection>
+    </resultMap>
+
+    <update id="updateDetails">
+        UPDATE tb_contract_details
+        <set>
+            <if test="contractDetails.productCode!=null and contractDetails.productCode!=''">
+                product_code=#{contractDetails.productCode}
+            </if>
+            <if test="contractDetails.productName!=null and contractDetails.productName!=''">
+                product_name=#{contractDetails.productName}
+            </if>
+            <if test="contractDetails.price!=null and contractDetails.price!=''">
+                price=#{contractDetails.price}
+            </if>
+            <if test="contractDetails.number!=null and contractDetails.number!=''">
+                number=#{contractDetails.number}
+            </if>
+            <if test="contractDetails.total!=null and contractDetails.total!=''">
+                total=#{contractDetails.total}
+            </if>
+        </set>
+        WHERE contract_code=#{contractDetails.contractCode}
+    </update>
+
+    <select id="findDriver" resultMap="getClassMap">
+select
+  n.*,
+  m.`id` as sid,
+  m.product_code,
+  m.product_name,
+  m.total,
+  m.price,
+  m.number,
+  m.contract_code,
+  a.LAYOUT_TIME AS layout_time
+from
+  tb_contract n
+  left join tb_contract_details m
+    on n.`contract_code` = m.`contract_code`
+  left join tb_device a
+    on m.`product_code` = a.`DEVICE_CODE`
+ where n.id=#{id}
+    </select>
+
+
+</mapper>

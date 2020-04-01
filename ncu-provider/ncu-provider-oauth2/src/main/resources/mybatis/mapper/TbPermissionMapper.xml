@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.TbPermissionMapper">
+
+  <select id="selectByUserId" resultType="com.ncu.springboot.api.oauth2.entity.TbPermission">
+SELECT
+	*
+FROM
+	tb_user u
+	LEFT JOIN tb_role n ON u.id = n.role_id
+	LEFT JOIN tb_role_permission m ON n.role_id = m.role_id
+	LEFT JOIN tb_permission c ON m.permission_id = c.permission_id
+WHERE c.permission_type_id='2'
+  </select>
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.TempPersionMapper">
+	<select id="getTempPersionInfo" resultType="Map">
+		select
+			tp.id,
+			tp.user_id as userId,
+			tp.user_name as userName,
+			tp.sex,
+			tp.id_card as idCard,
+			tp.mobile,
+			d.name as deptName,
+			tp.dept_id as deptId,
+			c.card_id as cardId,
+			c.img_path as imgPath,
+			tp.remark,
+			c.status as cardStatus
+		from
+			gate_temp_persion tp
+		left join
+			gate_card c on c.user_id = tp.user_id
+		left join 
+			tb_dept d on d.id = tp.dept_id
+		<where>
+			<if test='mobile != null and mobile != ""'>
+				and tp.mobile = #{mobile}
+			</if>
+			<if test='idCard != null and idCard != ""'>
+				and tp.id_Card = #{idCard}
+			</if>
+			<if test='cardId != null and cardId != ""'>
+				and c.card_id = #{cardId}
+			</if>
+		</where>
+	</select>
+</mapper>

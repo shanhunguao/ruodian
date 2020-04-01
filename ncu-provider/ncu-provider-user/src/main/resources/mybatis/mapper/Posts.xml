@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncu.springboot.dao.PostsMapper">
+
+	<sql id = "postColumns">
+		a.`id` AS "id",
+		a.`post_id` AS "postId",
+		a.`post_name` AS "postName",
+		a.`remark` AS "remark",
+		a.`update_time` AS "updateTime"
+	</sql>
+
+	<select id="postList" resultType = "Posts">
+		select 
+		<include refid="postColumns"/>
+		FROM tb_posts a
+		<where>
+			<if test= "entity.postId != null and entity.postId != ''">
+				AND a.post_id like CONCAT('%', #{entity.postId} ,'%')  
+			</if>
+			<if test= "entity.postName != null and entity.postName != ''">
+				AND a.post_name like CONCAT('%',#{entity.postName} ,'%')   
+			</if>
+		</where>
+		ORDER BY a.update_time DESC
+	</select>
+
+	<select id="postDetil" resultType = "Posts">
+		select 
+		<include refid="postColumns"/>
+		FROM tb_posts a
+		<where>
+			<if test= "entity.postId != null and entity.postId != ''">
+				AND a.post_id like CONCAT('%', #{entity.postId} ,'%')  
+			</if>
+			<if test= "entity.postName != null and entity.postName != ''">
+				AND a.post_name like CONCAT('%',#{entity.postName} ,'%')   
+			</if>
+		</where>
+		ORDER BY a.update_time DESC
+	</select>
+
+	<select id ="getDataById" resultType = "Posts">
+		select 
+		<include refid="postColumns"/>
+		FROM tb_posts a 
+		where a.id = #{id}
+	</select>
+	
+	<delete id="remove">
+		DELETE FROM tb_posts where id = #{id}
+	</delete>
+	
+	<delete id="deleteDetil">
+		DELETE FROM tb_posts where dept_id = #{id}
+	</delete>
+	
+</mapper>
